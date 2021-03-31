@@ -16,7 +16,7 @@ if(args.length < 2){
     console.log('invalid argument : usage : node app.js {mode} - [mode : set, cleanup]\n' +
                 '   set mode useage : {tiker} {sheet_type}\n' +
                 '       {tiker} - [stock_type]\n' + 
-                '       {sheet_type} - [finance, normal, reits]' +
+                '       {sheet_type} - [finance, normal, reits]\n' +
                 '   cleanup mode useage : cleanup {sheet_type}\n' +
                 '       {sheet_type} - [finance, normal, reits]');
 
@@ -27,7 +27,7 @@ if(args[0] == 'set' && args.length != 3){
     console.log('invalid argument : usage : node app.js {mode} - [mode : set, cleanup]\n' +
                 '   set mode useage : {tiker} {sheet_type}\n' +
                 '       {tiker} - [stock_type]\n' + 
-                '       {sheet_type} - [finance, normal, reits]' +
+                '       {sheet_type} - [finance, normal, reits]\n' +
                 '   cleanup mode useage : cleanup {sheet_type}\n' +
                 '       {sheet_type} - [finance, normal, reits]');
 
@@ -117,7 +117,7 @@ if(run_mode == 0){
                     }
 
                     data_writer.cleanup_sheet(req_sheet_type, function(e){
-                        
+
                         if(e){
                             console.log(e);
                             process.exit(1);
