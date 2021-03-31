@@ -31,6 +31,7 @@ data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type
 
     if(err){
         console.log(err);
+        process.exit(1);
     }
 
     var income_state = JSON.parse(income_state_data);
@@ -38,6 +39,7 @@ data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type
     data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type.balance_sheet, function(err, balance_sheet_data){
         if(err){
             console.log(err);
+            process.exit(1);
         }
     
         var balance_sheet = JSON.parse(balance_sheet_data);
@@ -46,6 +48,7 @@ data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type
 
             if(err){
                 console.log(err);
+                process.exit(1);
             }
         
             var cash_flow = JSON.parse(cash_flow_data);
@@ -65,7 +68,12 @@ data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type
                 }
 
                 data_writer.update_sheet(req_sheet_type, param.tiker, income_state, balance_sheet, cash_flow, function(e){
+                    if(e){
+                        console.log(e);
+                        process.exit(1);
+                    }
                     console.log('complete!!!!');
+                    process.exit(0);
                 });
             });
         });

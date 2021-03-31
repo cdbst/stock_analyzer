@@ -187,7 +187,7 @@ function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, 
             _callback(err);
             return;
         }
-        console.log('test');
+        _callback(undefined, result);
     });
 }
 
