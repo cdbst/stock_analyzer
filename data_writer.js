@@ -38,7 +38,37 @@ const normal_sheet_ranges = [
     '!B34:G34',
     '!B35:G35',
     '!B37:G37'
-]
+];
+
+const finance_sheet_ranges = [
+    '!A3', // tiker
+    '!H8', // month end 
+    '!B9:G9', // year : row header
+    '!B10:G10', // 이자 수익
+    '!B11:G11', // 이자 비용
+    '!B15:G15', // 비이자 수익
+    '!B17:G17', // 대손충당금
+    '!B19:G19', // 총 운영비용
+    '!B22:G22', // 순이익
+    '!B25:G25', // 자산
+    '!B26:G26', // 부채
+    '!B28:G28', // 보통주지분
+    '!B29:G29', // 우선주지분
+    '!B30:G30', // 발행주식수
+    '!B31:G31', // 현금성자산
+    '!B32:G32', // 총 투자자산
+    '!B33:G33', // 총 대출
+    '!B34:G34', // 예금
+    '!B35:G35', // 단기 차입금
+    '!B36:G36', // 장기 차입금
+    '!B37:G37', // 기타 유동 부채
+    '!B38:G38', // 기타 비유동 부채
+    '!B40:G40', // 영업활동 현금흐름
+    '!B42:G42', // 투자활동 현금흐름
+    '!B44:G44', // 재무활동 현금흐름
+    '!B46:G46', // FCF/Share
+    '!B48:G48' // 배당지출
+];
 
 var g = {};
 g.auth = undefined;
@@ -167,11 +197,11 @@ function cleanup_sheet(sheet_id, _callback){
     var cleanup_datas = [];
 
     if(sheet_id == enum_sheet_types.SPREADSHEET_ID_NORMAL){
-        cleanup_datas = build_cleanup_normal_sheet_data();
+        cleanup_datas = build_normal_sheet_cleanup_data();
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_REITS){
 
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_FINANCE){
-
+        cleanup_datas = build_finance_sheet_cleanup_data();
     }else{
         _callback('undefiend sheet type in update_sheet');
         return;
@@ -230,7 +260,7 @@ function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, 
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_REITS){
 
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_FINANCE){
-
+        update_datas = build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas);
     }else{
         _callback('undefiend sheet type in update_sheet');
         return;
@@ -311,28 +341,131 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
         fcf_per_shares,
         dividends_paids
     );
-    
-    var i = 0;
-    normal_sheet_ranges.forEach(range =>{
 
+    for(var i = 0; i < normal_sheet_ranges.length; i++){
+        var range = normal_sheet_ranges[i];
         var cell_data = cell_datas[i];
 
         update_datas.push({
             range: g.sheet_name + range, // TIKER
             values: [cell_data]
         });
-
-        i++;
-    });
+    }
 
     return update_datas;
 }
 
-function build_cleanup_normal_sheet_data(){
+function build_normal_sheet_cleanup_data(){
 
     var cleanup_data = [];
 
     normal_sheet_ranges.forEach((_range) =>{
+
+        var val = undefined;
+
+        if(_range.includes(':')){
+            val = [[0, 0, 0, 0, 0, 0]];
+        }else{
+            val = [['']];
+        }
+
+        cleanup_data.push({
+            range: g.sheet_name + _range, 
+            values: val
+        });
+    });
+
+    return cleanup_data;
+}
+
+function build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas){
+
+    var update_datas = [];
+
+    if(income_state_datas.length == 0 || balance_sheet_datas.length == 0 || cash_flow_datas.length == 0){
+        return update_datas;
+    }
+
+    var cell_datas = [];
+
+    var month_end = get_month_end(income_state_datas);
+    var years = get_years(income_state_datas);
+    var total_interest_income = get_row_datas(years, income_state_datas, find_row_idx('Total Interest Income', income_state_datas.data));
+    var total_interest_expense = get_row_datas(years, income_state_datas, find_row_idx('Total Interest Expense', income_state_datas.data));
+    var total_non_interest_income = get_row_datas(years, income_state_datas, find_row_idx('Total Non Interest Income', income_state_datas.data));
+    var provision_for_loan_losses = get_row_datas(years, income_state_datas, find_row_idx('Provision For Loan Losses', income_state_datas.data));
+    var total_non_interest_expenses = get_row_datas(years, income_state_datas, find_row_idx('Total Non Interest Expense', income_state_datas.data));
+    var net_income = get_row_datas(years, income_state_datas, find_row_idx('Net Income', income_state_datas.data));
+
+    var total_assets = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Assets', balance_sheet_datas.data));
+    var total_liabilities = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Liabilities', balance_sheet_datas.data));
+    var total_common_equity = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Common Equity', balance_sheet_datas.data));
+    var total_preferred_equity = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Preferred Equity', balance_sheet_datas.data));
+    var total_shares_outstanding = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Shares Out. on Filing Date', balance_sheet_datas.data));
+    var cash_n_equivalents = get_row_datas(years, balance_sheet_datas, find_row_idx('Cash And Equivalents', balance_sheet_datas.data));
+    var total_investments = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Investments', balance_sheet_datas.data));
+    var let_loans = get_row_datas(years, balance_sheet_datas, find_row_idx('Net Loans', balance_sheet_datas.data));
+    var total_deposits = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Deposits', balance_sheet_datas.data));
+    var short_term_borrowings = get_row_datas(years, balance_sheet_datas, find_row_idx('Short-Term Borrowings', balance_sheet_datas.data));
+    var long_term_debt = get_row_datas(years, balance_sheet_datas, find_row_idx('Long-Term Debt', balance_sheet_datas.data));
+
+    var other_current_liabilities = get_row_datas(years, balance_sheet_datas, find_row_idx('Other Current Liabilities ', balance_sheet_datas.data));
+    var other_non_current_liabilities = get_row_datas(years, balance_sheet_datas, find_row_idx('Other Non Current Liabilities', balance_sheet_datas.data));
+
+    var cash_from_operations = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Operations', cash_flow_datas.data));
+    var cash_from_investing = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Investing', cash_flow_datas.data));
+    var cash_from_financing = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Financing', cash_flow_datas.data));
+    var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
+    var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
+
+    cell_datas.push( // 반드시 순서대로 넣어야 함.
+        [tiker],
+        ['<Month end : ' + month_end + '>'],
+        years,
+        total_interest_income,
+        total_interest_expense,
+        total_non_interest_income,
+        provision_for_loan_losses,
+        total_non_interest_expenses,
+        net_income,
+        total_assets,
+        total_liabilities,
+        total_common_equity,
+        total_preferred_equity,
+        total_shares_outstanding,
+        cash_n_equivalents,
+        total_investments,
+        let_loans,
+        total_deposits,
+        short_term_borrowings,
+        long_term_debt,
+        other_current_liabilities,
+        other_non_current_liabilities,
+        cash_from_operations,
+        cash_from_investing,
+        cash_from_financing,
+        fcf_per_shares,
+        dividends_paids
+    );
+
+    for(var i = 0; i < finance_sheet_ranges.length; i++){
+        var range = finance_sheet_ranges[i];
+        var cell_data = cell_datas[i];
+
+        update_datas.push({
+            range: g.sheet_name + range, // TIKER
+            values: [cell_data]
+        });
+    }
+
+    return update_datas;
+}
+
+function build_finance_sheet_cleanup_data(){
+
+    var cleanup_data = [];
+
+    finance_sheet_ranges.forEach((_range) =>{
 
         var val = undefined;
 
@@ -362,6 +495,8 @@ function get_years(income_state_datas){
 
     sample_data_list.forEach(sample_data => {
 
+        if('headerClass' in sample_data) return;
+        
         if(sample_data['name'] == 'TTM'){
             years.push('TTM');
             return;
