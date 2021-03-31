@@ -16,8 +16,33 @@ var enum_sheet_types = {
     SPREADSHEET_ID_REITS : '113X2f5R284SPQlXkq_NIPaPax7p1ybxzC6LBzSSRQi0'
 }
 
+const normal_sheet_data_cells = [
+    '!A3',
+    '!H8',
+    '!B9:G9',
+    '!B10:G10',
+    '!B12:G12',
+    '!B15:G15',
+    '!B17:G17',
+    '!B19:G19',
+    '!B21:G21',
+    '!B22:G22',
+    '!B24:G24',
+    '!B25:G25',
+    '!B26:G26',
+    '!B27:G27',
+    '!B28:G28',
+    '!B29:G29',
+    '!B31:G31',
+    '!B33:G33',
+    '!B34:G34',
+    '!B35:G35',
+    '!B37:G37'
+]
+
 var g = {};
 g.auth = undefined;
+g.sheet_name = 'summary';
 
 // Load client secrets from a local file.
 function run(_callback) {
@@ -134,10 +159,68 @@ function get_sheet(sheet_id, _callback){
     });
 }
 
+function cleanup_sheet(sheet_id, _callback){
+
+    var auth = g.auth;
+    var sheets = google.sheets({ version: 'v4', auth });
+
+    var cleanup_datas = [];
+
+    if(sheet_id == enum_sheet_types.SPREADSHEET_ID_NORMAL){
+        cleanup_datas = build_cleanup_normal_sheet_data();
+    }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_REITS){
+
+    }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_FINANCE){
+
+    }else{
+        _callback('undefiend sheet type in update_sheet');
+        return;
+    }
+
+    var resources = {
+        auth: g.auth,
+        spreadsheetId: sheet_id,
+        resource:{
+            valueInputOption: "RAW",
+            data: cleanup_datas
+        }
+    };
+
+    sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
+        if(err){
+            _callback(err);
+            return;
+        }
+        _callback(undefined, result);
+    });
+
+}
+
+
+// sample data
+    // data:[
+    //     {
+    //         range: g.sheet_name + "!A3", // Update single cell
+    //         values: [[tiker]]
+    //     }, 
+    //     // {
+    //     //     range: "Sheet1!B4:B6", // Update a column
+    //     //     values: [["B4"], ["B5"], ["B6"]]
+    //     // }, 
+    //     // {
+    //     //     range: "Sheet1!C4:E4", // Update a row
+    //     //     values: [["C4", "D4", "E4"]]
+    //     // }, 
+    //     // {
+    //     //     range: "Sheet1!F5:H6", // Update a 2d range
+    //     //     values: [["F5", "F5"], ["H6", "H6"]]
+    //     // }
+    // ]
+
+
 function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, cash_flow_datas, _callback){
 
     var auth = g.auth;
-
     var sheets = google.sheets({ version: 'v4', auth });
 
     var update_datas = undefined;
@@ -162,26 +245,6 @@ function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, 
         }
     };
 
-    // sample data
-    // data:[
-    //     {
-    //         range: sheet_name + "!A3", // Update single cell
-    //         values: [[tiker]]
-    //     }, 
-    //     // {
-    //     //     range: "Sheet1!B4:B6", // Update a column
-    //     //     values: [["B4"], ["B5"], ["B6"]]
-    //     // }, 
-    //     // {
-    //     //     range: "Sheet1!C4:E4", // Update a row
-    //     //     values: [["C4", "D4", "E4"]]
-    //     // }, 
-    //     // {
-    //     //     range: "Sheet1!F5:H6", // Update a 2d range
-    //     //     values: [["F5", "F5"], ["H6", "H6"]]
-    //     // }
-    // ]
-
     sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
         if(err){
             _callback(err);
@@ -198,8 +261,6 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
     if(income_state_datas.length == 0 || balance_sheet_datas.length == 0 || cash_flow_datas.length == 0){
         return update_datas;
     }
-
-    const sheet_name = 'summary';
 
     var month_end = get_month_end(income_state_datas);
     var years = get_years(income_state_datas);
@@ -227,113 +288,136 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
     
     //step1 : update tiker
     update_datas.push({
-        range: sheet_name + "!A3", // TIKER
+        range: g.sheet_name + "!A3", // TIKER
         values: [[tiker]]
     });
 
     //step2 : update month end
     update_datas.push({
-        range: sheet_name + "!H8", // add month end
+        range: g.sheet_name + "!H8", // add month end
         values: [['<Month end : ' + month_end + '>']]
     });
 
     //step3 : update year column header
     update_datas.push({
-        range: sheet_name + "!B9:G9", // add row col
+        range: g.sheet_name + "!B9:G9", // add row col
         values: [years]
     });
 
     update_datas.push({
-        range: sheet_name + "!B10:G10", // add total revenues
+        range: g.sheet_name + "!B10:G10", // add total revenues
         values: [total_revenues]
     });
 
     update_datas.push({
-        range: sheet_name + "!B12:G12", // add op incomes
+        range: g.sheet_name + "!B12:G12", // add op incomes
         values: [operating_incomes]
     });
 
     update_datas.push({
-        range: sheet_name + "!B15:G15", // add net interest expense
+        range: g.sheet_name + "!B15:G15", // add net interest expense
         values: [net_interest_expenses]
     });
 
     update_datas.push({
-        range: sheet_name + "!B17:G17", // add net incomes
+        range: g.sheet_name + "!B17:G17", // add net incomes
         values: [net_incomes]
     });
 
     update_datas.push({
-        range: sheet_name + "!B19:G19", // add ebitas
+        range: g.sheet_name + "!B19:G19", // add ebitas
         values: [ebitdas]
     });
 
     update_datas.push({
-        range: sheet_name + "!B21:G21", // add total assets
+        range: g.sheet_name + "!B21:G21", // add total assets
         values: [total_assets]
     });
 
     update_datas.push({
-        range: sheet_name + "!B22:G22", // add total liablilities
+        range: g.sheet_name + "!B22:G22", // add total liablilities
         values: [total_liabilities]
     });
 
     update_datas.push({
-        range: sheet_name + "!B24:G24", // add common equity
+        range: g.sheet_name + "!B24:G24", // add common equity
         values: [total_common_equity]
     });
 
     update_datas.push({
-        range: sheet_name + "!B25:G25", // add minority interest
+        range: g.sheet_name + "!B25:G25", // add minority interest
         values: [minority_interest]
     });
 
     update_datas.push({
-        range: sheet_name + "!B26:G26", // add total_shares_outstanding
+        range: g.sheet_name + "!B26:G26", // add total_shares_outstanding
         values: [total_shares_outstanding]
     });
 
     update_datas.push({
-        range: sheet_name + "!B27:G27", // add total cash and short term investments
+        range: g.sheet_name + "!B27:G27", // add total cash and short term investments
         values: [total_cash_n_st_investments]
     });
 
     update_datas.push({
-        range: sheet_name + "!B28:G28", // add total current assets
+        range: g.sheet_name + "!B28:G28", // add total current assets
         values: [total_current_assets]
     });
 
     update_datas.push({
-        range: sheet_name + "!B29:G29", // add total current liabilities
+        range: g.sheet_name + "!B29:G29", // add total current liabilities
         values: [total_current_liabilities]
     });
 
     update_datas.push({
-        range: sheet_name + "!B31:G31", 
+        range: g.sheet_name + "!B31:G31", 
         values: [cash_from_operations]
     });
 
     update_datas.push({
-        range: sheet_name + "!B33:G33", 
+        range: g.sheet_name + "!B33:G33", 
         values: [capex]
     });
 
     update_datas.push({
-        range: sheet_name + "!B34:G34", 
+        range: g.sheet_name + "!B34:G34", 
         values: [levered_free_cash_flow]
     });
 
     update_datas.push({
-        range: sheet_name + "!B35:G35", 
+        range: g.sheet_name + "!B35:G35", 
         values: [fcf_per_shares]
     });
 
     update_datas.push({
-        range: sheet_name + "!B37:G37", 
+        range: g.sheet_name + "!B37:G37", 
         values: [dividends_paids]
     });
 
     return update_datas;
+}
+
+function build_cleanup_normal_sheet_data(){
+
+    var cleanup_data = [];
+
+    normal_sheet_data_cells.forEach((_range) =>{
+
+        var val = undefined;
+
+        if(_range.includes(':')){
+            val = [[0, 0, 0, 0, 0, 0]];
+        }else{
+            val = [['']];
+        }
+
+        cleanup_data.push({
+            range: g.sheet_name + _range, 
+            values: val
+        });
+    });
+
+    return cleanup_data;
 }
 
 function get_month_end(income_state_datas){
@@ -436,4 +520,5 @@ function find_row_idx(row_col_str, data_set){
 module.exports.run = run;
 module.exports.get_sheet = get_sheet;
 module.exports.update_sheet = update_sheet;
+module.exports.cleanup_sheet = cleanup_sheet;
 module.exports.enum_sheet_types = enum_sheet_types;
