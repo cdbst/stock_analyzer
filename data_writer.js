@@ -16,7 +16,7 @@ var enum_sheet_types = {
     SPREADSHEET_ID_REITS : '113X2f5R284SPQlXkq_NIPaPax7p1ybxzC6LBzSSRQi0'
 }
 
-const normal_sheet_data_cells = [
+const normal_sheet_ranges = [
     '!A3',
     '!H8',
     '!B9:G9',
@@ -262,6 +262,8 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
         return update_datas;
     }
 
+    var cell_datas = [];
+
     var month_end = get_month_end(income_state_datas);
     var years = get_years(income_state_datas);
     var total_revenues = get_row_datas(years, income_state_datas, find_row_idx('Total Revenues', income_state_datas.data));
@@ -285,113 +287,42 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
     var levered_free_cash_flow = get_row_datas(years, cash_flow_datas, find_row_idx('Levered Free Cash Flow', cash_flow_datas.data));
     var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
     var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
+
+    cell_datas.push( // 반드시 순서대로 넣어야 함.
+        [tiker],
+        ['<Month end : ' + month_end + '>'],
+        years,
+        total_revenues,
+        operating_incomes,
+        net_interest_expenses,
+        net_incomes,
+        ebitdas,
+        total_assets,
+        total_liabilities,
+        total_common_equity,
+        minority_interest,
+        total_shares_outstanding,
+        total_cash_n_st_investments,
+        total_current_assets,
+        total_current_liabilities,
+        cash_from_operations,
+        capex,
+        levered_free_cash_flow,
+        fcf_per_shares,
+        dividends_paids
+    );
     
-    //step1 : update tiker
-    update_datas.push({
-        range: g.sheet_name + "!A3", // TIKER
-        values: [[tiker]]
-    });
+    var i = 0;
+    normal_sheet_ranges.forEach(range =>{
 
-    //step2 : update month end
-    update_datas.push({
-        range: g.sheet_name + "!H8", // add month end
-        values: [['<Month end : ' + month_end + '>']]
-    });
+        var cell_data = cell_datas[i];
 
-    //step3 : update year column header
-    update_datas.push({
-        range: g.sheet_name + "!B9:G9", // add row col
-        values: [years]
-    });
+        update_datas.push({
+            range: g.sheet_name + range, // TIKER
+            values: [cell_data]
+        });
 
-    update_datas.push({
-        range: g.sheet_name + "!B10:G10", // add total revenues
-        values: [total_revenues]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B12:G12", // add op incomes
-        values: [operating_incomes]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B15:G15", // add net interest expense
-        values: [net_interest_expenses]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B17:G17", // add net incomes
-        values: [net_incomes]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B19:G19", // add ebitas
-        values: [ebitdas]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B21:G21", // add total assets
-        values: [total_assets]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B22:G22", // add total liablilities
-        values: [total_liabilities]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B24:G24", // add common equity
-        values: [total_common_equity]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B25:G25", // add minority interest
-        values: [minority_interest]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B26:G26", // add total_shares_outstanding
-        values: [total_shares_outstanding]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B27:G27", // add total cash and short term investments
-        values: [total_cash_n_st_investments]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B28:G28", // add total current assets
-        values: [total_current_assets]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B29:G29", // add total current liabilities
-        values: [total_current_liabilities]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B31:G31", 
-        values: [cash_from_operations]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B33:G33", 
-        values: [capex]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B34:G34", 
-        values: [levered_free_cash_flow]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B35:G35", 
-        values: [fcf_per_shares]
-    });
-
-    update_datas.push({
-        range: g.sheet_name + "!B37:G37", 
-        values: [dividends_paids]
+        i++;
     });
 
     return update_datas;
@@ -401,7 +332,7 @@ function build_cleanup_normal_sheet_data(){
 
     var cleanup_data = [];
 
-    normal_sheet_data_cells.forEach((_range) =>{
+    normal_sheet_ranges.forEach((_range) =>{
 
         var val = undefined;
 

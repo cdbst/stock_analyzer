@@ -11,37 +11,26 @@ var args = process.argv.slice(2);
 var param = {}
 param.mode = args[0];
 
+const useage_string =   'invalid argument : usage : node app.js {mode} - [mode : set, cleanup]\n' +
+                        '   set mode useage : {tiker} {sheet_type}\n' +
+                        '       {tiker} - [stock_type]\n' + 
+                        '       {sheet_type} - [finance, normal, reits]\n' +
+                        '   cleanup mode useage : cleanup {sheet_type}\n' +
+                        '       {sheet_type} - [finance, normal, reits]';
+
 
 if(args.length < 2){
-    console.log('invalid argument : usage : node app.js {mode} - [mode : set, cleanup]\n' +
-                '   set mode useage : {tiker} {sheet_type}\n' +
-                '       {tiker} - [stock_type]\n' + 
-                '       {sheet_type} - [finance, normal, reits]\n' +
-                '   cleanup mode useage : cleanup {sheet_type}\n' +
-                '       {sheet_type} - [finance, normal, reits]');
-
+    console.log(useage_string);
     process.exit(1);
 }
 
 if(args[0] == 'set' && args.length != 3){
-    console.log('invalid argument : usage : node app.js {mode} - [mode : set, cleanup]\n' +
-                '   set mode useage : {tiker} {sheet_type}\n' +
-                '       {tiker} - [stock_type]\n' + 
-                '       {sheet_type} - [finance, normal, reits]\n' +
-                '   cleanup mode useage : cleanup {sheet_type}\n' +
-                '       {sheet_type} - [finance, normal, reits]');
-
+    console.log(useage_string);
     process.exit(1);
 }
 
 if(args[0] == 'cleanup' && args.length != 2){
-    console.log('invalid argument : usage : node app.js {mode} - [mode : set, cleanup]\n' +
-                '   set mode useage : {tiker} {sheet_type}\n' +
-                '       {tiker} - [stock_type]\n' + 
-                '       {sheet_type} - [finance, normal, reits]' +
-                '   cleanup mode useage : cleanup {sheet_type}\n' +
-                '       {sheet_type} - [finance, normal, reits]');
-
+    console.log(useage_string);
     process.exit(1);
 }
 
@@ -50,7 +39,7 @@ var run_mode = args[0] == 'set' ? 0 : 1; // 0 is default mode. 1 is cleanup mode
 if(run_mode == 0){ //set mode
     param.tiker = args[1];
     param.stock_type = args[2];
-}else{
+}else{ // cleanup mode
     param.stock_type = args[1];
 }
 
