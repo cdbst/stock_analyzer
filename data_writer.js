@@ -137,7 +137,7 @@ function get_sheet(auth, sheet_id, __callback){
         }else{
             
             console.log('spc sheet information is empty');
-            __callback(GSS_V4_ERR.CANNOT_FOUND);
+            __callback('spc sheet information is empty');
             return;
         }
     });

@@ -63,5 +63,29 @@ var get_financial_data = function(tiker, financial_data_type, __callback){
     return;
 }
 
+function find_data_type_in_dataset(data_type, date_set){
+
+    var super_set = date_set.data;
+
+    for(var i = 0; i < super_set.length; i++){
+        var sub_set = super_set[i];
+
+        for(var j = 0; j < sub_set.length; j++){
+            var rows = sub_set[j];
+
+            for(var k = 0; k < rows.length; k++){
+                var row = rows[k];
+
+                if(row.value == data_type){
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false; // test code
+}
+
 module.exports.get_financial_data = get_financial_data;
+module.exports.find_data_type_in_dataset = find_data_type_in_dataset;
 module.exports.enum_financial_data_type = enum_financial_data_type;
