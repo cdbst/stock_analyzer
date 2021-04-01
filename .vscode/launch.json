@@ -1,0 +1,68 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch - Set mode (normal)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["set", "TGT", "normal"],
+            "program": "${workspaceFolder}\\app.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch - Cleanup mode (normal)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["cleanup", "normal"],
+            "program": "${workspaceFolder}\\app.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch - Set mode (finance)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["set", "BAC", "finance"],
+            "program": "${workspaceFolder}\\app.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch - Cleanup mode (finance)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["cleanup", "finance"],
+            "program": "${workspaceFolder}\\app.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch - Set mode (reits)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["set", "O", "reits"],
+            "program": "${workspaceFolder}\\app.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch - Cleanup mode (reits)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": ["cleanup", "reits"],
+            "program": "${workspaceFolder}\\app.js"
+        }
+    ]
+}

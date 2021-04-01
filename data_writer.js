@@ -17,27 +17,31 @@ var enum_sheet_types = {
 }
 
 const normal_sheet_ranges = [
-    '!A3',
-    '!H8',
-    '!B9:G9',
-    '!B10:G10',
-    '!B12:G12',
-    '!B15:G15',
-    '!B17:G17',
-    '!B19:G19',
-    '!B21:G21',
-    '!B22:G22',
-    '!B24:G24',
-    '!B25:G25',
-    '!B26:G26',
-    '!B27:G27',
-    '!B28:G28',
-    '!B29:G29',
-    '!B31:G31',
-    '!B33:G33',
-    '!B34:G34',
-    '!B35:G35',
-    '!B37:G37'
+    '!A3', // 티커
+    '!H8', // Month end
+    '!B9:G9', // 연도
+    '!B10:G10', // 매출액
+    '!B12:G12', // 영업이익
+    '!B15:G15', // 이자수익(비용)
+    '!B17:G17', // 순이익
+    '!B19:G19', // EBITDA
+    '!B21:G21', // 자산
+    '!B22:G22', // 부채
+    '!B24:G24', // 보통주지분
+    '!B25:G25', // 우선주지분
+    '!B26:G26', // 발행주식수
+    '!B27:G27', // 현금성자산
+    '!B28:G28', // 유동자산
+    '!B29:G29', // 유동부채
+    '!B31:G31', // 재고자산
+    '!B32:G32', // 매출채권
+    '!B33:G33', // 매입채무
+    '!B35:G35', // 영업활동 현금흐름 
+    '!B37:G37', // CAPEX
+    '!B38:G38', // Levered FCF
+    '!B39:G39', // FCF / share
+    '!B41:G41', // 배당 지출
+    '!B43:G43' // 자사주 매입
 ];
 
 const finance_sheet_ranges = [
@@ -67,7 +71,47 @@ const finance_sheet_ranges = [
     '!B42:G42', // 투자활동 현금흐름
     '!B44:G44', // 재무활동 현금흐름
     '!B46:G46', // FCF/Share
-    '!B48:G48' // 배당지출
+    '!B48:G48', // 배당지출
+    '!B50:G50' // 보통주매입
+];
+
+const reits_sheet_ranges = [
+    '!A3', // tiker
+    '!H8', // month end 
+    '!B9:G9', // year : row header
+    '!B10:G10', // 매출액
+    '!B12:G12', // 운영수익
+    '!B14:G14', // 지속운영수익
+    '!B16:G16', // FFO
+    '!B19:G19', // AFFO
+    '!B22:G22', // EBITDA
+    '!B24:G24', // EBITDAR
+    '!B26:G26', // 자산
+    '!B27:G27', // 부채
+    '!B29:G29', // 보통주지분
+    '!B30:G30', // 우선주지분
+    '!B31:G31', // 발행주식수
+    '!B32:G32', // 부동산자산
+    '!B33:G33', // 현금성 자산
+    '!B34:G34', // 매출채권
+    '!B35:G35', // 기타 유동자산
+    '!B36:G36', // 장기 이연요금
+    '!B38:G38', // 매입채무
+    '!B39:G39', // 미지급비용
+    '!B40:G40', // CPLTD
+    '!B41:G41', // 기타 유동부채
+    '!B45:G45', // 영업활동 현금흐름
+    '!B47:G47', // CAPEX
+    '!B48:G48', // 보통주발행 수익
+    '!B49:G49', // 배당지출
+    '!B51:G51', // 보통주매입
+    '!B52:G52', // Levered FCF
+    '!B53:G53', // FCF/Share
+    '!B55:G55', // 임대수익
+    '!B56:G56', // 임대지출
+    '!B57:G57', // 순이자비용
+    '!B60:G60', // FFO/Share
+    '!B61:G61', // AFFO/Share
 ];
 
 var g = {};
@@ -199,7 +243,7 @@ function cleanup_sheet(sheet_id, _callback){
     if(sheet_id == enum_sheet_types.SPREADSHEET_ID_NORMAL){
         cleanup_datas = build_normal_sheet_cleanup_data();
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_REITS){
-
+        cleanup_datas = build_reits_sheet_cleanup_data()
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_FINANCE){
         cleanup_datas = build_finance_sheet_cleanup_data();
     }else{
@@ -223,7 +267,6 @@ function cleanup_sheet(sheet_id, _callback){
         }
         _callback(undefined, result);
     });
-
 }
 
 
@@ -258,7 +301,7 @@ function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, 
     if(sheet_id == enum_sheet_types.SPREADSHEET_ID_NORMAL){
         update_datas = build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas);
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_REITS){
-
+        update_datas = build_reits_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas);
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_FINANCE){
         update_datas = build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas);
     }else{
@@ -312,11 +355,16 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
     var total_current_assets = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Current Assets', balance_sheet_datas.data));
     var total_current_liabilities = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Current Liabilities', balance_sheet_datas.data));
 
+    var inventory = get_row_datas(years, balance_sheet_datas, find_row_idx('Inventory', balance_sheet_datas.data));
+    var accounts_receivable = get_row_datas(years, balance_sheet_datas, find_row_idx('Accounts Receivable', balance_sheet_datas.data));
+    var accounts_payable = get_row_datas(years, balance_sheet_datas, find_row_idx('Accounts Payable', balance_sheet_datas.data));
+
     var cash_from_operations = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Operations', cash_flow_datas.data));
     var capex = get_row_datas(years, cash_flow_datas, find_row_idx('Capital Expenditure', cash_flow_datas.data));
     var levered_free_cash_flow = get_row_datas(years, cash_flow_datas, find_row_idx('Levered Free Cash Flow', cash_flow_datas.data));
     var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
     var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
+    var repurchase_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
 
     cell_datas.push( // 반드시 순서대로 넣어야 함.
         [tiker],
@@ -335,11 +383,15 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
         total_cash_n_st_investments,
         total_current_assets,
         total_current_liabilities,
+        inventory,
+        accounts_receivable,
+        accounts_payable,
         cash_from_operations,
         capex,
         levered_free_cash_flow,
         fcf_per_shares,
-        dividends_paids
+        dividends_paids,
+        repurchase_paids
     );
 
     for(var i = 0; i < normal_sheet_ranges.length; i++){
@@ -417,6 +469,7 @@ function build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas
     var cash_from_financing = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Financing', cash_flow_datas.data));
     var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
     var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
+    var repurchase_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
 
     cell_datas.push( // 반드시 순서대로 넣어야 함.
         [tiker],
@@ -445,7 +498,8 @@ function build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas
         cash_from_investing,
         cash_from_financing,
         fcf_per_shares,
-        dividends_paids
+        dividends_paids,
+        repurchase_paids
     );
 
     for(var i = 0; i < finance_sheet_ranges.length; i++){
@@ -466,6 +520,136 @@ function build_finance_sheet_cleanup_data(){
     var cleanup_data = [];
 
     finance_sheet_ranges.forEach((_range) =>{
+
+        var val = undefined;
+
+        if(_range.includes(':')){
+            val = [[0, 0, 0, 0, 0, 0]];
+        }else{
+            val = [['']];
+        }
+
+        cleanup_data.push({
+            range: g.sheet_name + _range, 
+            values: val
+        });
+    });
+
+    return cleanup_data;
+}
+
+function build_reits_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas){
+
+    var update_datas = [];
+
+    if(income_state_datas.length == 0 || balance_sheet_datas.length == 0 || cash_flow_datas.length == 0){
+        return update_datas;
+    }
+
+    var cell_datas = [];
+
+    var month_end = get_month_end(income_state_datas);
+    var years = get_years(income_state_datas);
+    var total_revenues = get_row_datas(years, income_state_datas, find_row_idx('Total Revenues', income_state_datas.data));
+    var operating_income = get_row_datas(years, income_state_datas, find_row_idx('Operating Income', income_state_datas.data));
+    var earnings_from_continuing_operations = get_row_datas(years, income_state_datas, find_row_idx('Earnings From Continuing Operations', income_state_datas.data));
+
+    var ffo = get_row_datas(years, income_state_datas, find_row_idx('FFO', income_state_datas.data));
+    var affo = get_row_datas(years, income_state_datas, find_row_idx('AFFO', income_state_datas.data));
+    var ebitda = get_row_datas(years, income_state_datas, find_row_idx('EBITDA', income_state_datas.data));
+    var ebitdar = get_row_datas(years, income_state_datas, find_row_idx('EBITDAR', income_state_datas.data));
+
+    var total_assets = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Assets', balance_sheet_datas.data));
+    var total_liabilities = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Liabilities', balance_sheet_datas.data));
+    var total_common_equity = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Common Equity', balance_sheet_datas.data));
+    var Total_preferred_equity = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Preferred Equity', balance_sheet_datas.data));
+    var total_shares_outstanding = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Shares Out. on Filing Date', balance_sheet_datas.data));
+
+    var total_real_estate_assets = get_row_datas(years, balance_sheet_datas, find_row_idx('Total Real Estate Assets', balance_sheet_datas.data));
+
+    var cash_n_equivalents = get_row_datas(years, balance_sheet_datas, find_row_idx('Cash And Equivalents', balance_sheet_datas.data));
+    var accounts_receivable = get_row_datas(years, balance_sheet_datas, find_row_idx('Accounts Receivable', balance_sheet_datas.data));
+    var other_current_assets = get_row_datas(years, balance_sheet_datas, find_row_idx('Other Current Assets', balance_sheet_datas.data));
+    var deferred_charges_long_term = get_row_datas(years, balance_sheet_datas, find_row_idx('Deferred Charges Long-Term', balance_sheet_datas.data));
+
+    var accounts_payable = get_row_datas(years, balance_sheet_datas, find_row_idx('Accounts Payable', balance_sheet_datas.data));
+    var accrued_expenses = get_row_datas(years, balance_sheet_datas, find_row_idx('Accrued Expenses', balance_sheet_datas.data));
+    var cpltd = get_row_datas(years, balance_sheet_datas, find_row_idx('Current Portion of LT Debt', balance_sheet_datas.data));
+    var other_current_liabilities = get_row_datas(years, balance_sheet_datas, find_row_idx('Other Current Liabilities', balance_sheet_datas.data));
+
+    var cashflow_from_operations = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Operations', cash_flow_datas.data));
+    var capex = get_row_datas(years, cash_flow_datas, find_row_idx('Acquisition of Real Estate Assets', cash_flow_datas.data));
+    var issuance_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Common Stock', cash_flow_datas.data));
+    var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
+    var repurchase_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
+
+    var levered_free_cashflow = get_row_datas(years, cash_flow_datas, find_row_idx('Levered Free Cash Flow', cash_flow_datas.data));
+    var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
+
+    var rental_revenue = get_row_datas(years, income_state_datas, find_row_idx('Rental Revenue', income_state_datas.data));
+    var property_expenses = get_row_datas(years, income_state_datas, find_row_idx('Property Expenses', income_state_datas.data));
+    var net_interest_expenses = get_row_datas(years, income_state_datas, find_row_idx('Net Interest Expenses', income_state_datas.data));
+
+    var ffo_per_share = get_row_datas(years, income_state_datas, find_row_idx('FFO Per Share (Diluted)', income_state_datas.data));
+    var affo_per_share = get_row_datas(years, income_state_datas, find_row_idx('Adjusted FFO Per Share (Diluted)', income_state_datas.data));
+
+    cell_datas.push( // 반드시 순서대로 넣어야 함.
+        [tiker],
+        ['<Month end : ' + month_end + '>'],
+        years,
+        total_revenues,
+        operating_income,
+        earnings_from_continuing_operations,
+        ffo,
+        affo,
+        ebitda,
+        ebitdar,
+        total_assets,
+        total_liabilities,
+        total_common_equity,
+        Total_preferred_equity,
+        total_shares_outstanding,
+        total_real_estate_assets,
+        cash_n_equivalents,
+        accounts_receivable,
+        other_current_assets,
+        deferred_charges_long_term,
+        accounts_payable,
+        accrued_expenses,
+        cpltd,
+        other_current_liabilities,
+        cashflow_from_operations,
+        capex,
+        issuance_of_common_stock,
+        dividends_paids,
+        repurchase_paids,
+        levered_free_cashflow,
+        fcf_per_shares,
+        rental_revenue,
+        property_expenses,
+        net_interest_expenses,
+        ffo_per_share,
+        affo_per_share
+    );
+
+    for(var i = 0; i < reits_sheet_ranges.length; i++){
+        var range = reits_sheet_ranges[i];
+        var cell_data = cell_datas[i];
+
+        update_datas.push({
+            range: g.sheet_name + range, // TIKER
+            values: [cell_data]
+        });
+    }
+
+    return update_datas;
+}
+
+function build_reits_sheet_cleanup_data(){
+
+    var cleanup_data = [];
+
+    reits_sheet_ranges.forEach((_range) =>{
 
         var val = undefined;
 
