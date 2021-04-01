@@ -1,14 +1,4 @@
-const fs = require('fs');
 const { google } = require('googleapis');
-
-// If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'];
-
-// The file token.json stores the user's access and refresh tokens, and is
-// created automatically when the authorization flow completes for the first
-// time.
-const TOKEN_PATH = './config/token.json';
-const CREDENTIALS_PATH = './config/credentials.json';
 
 var enum_sheet_types = {
     SPREADSHEET_ID_NORMAL : '1JRkKLvUePsNEzSe2yW7Fz4BrXxmyCivdzXQI0L0QylE',
@@ -115,95 +105,15 @@ const reits_sheet_ranges = [
 ];
 
 var g = {};
-g.auth = undefined;
 g.sheet_name = 'summary';
 
-// Load client secrets from a local file.
-function run(_callback) {
+function get_sheet(auth, sheet_id, __callback){
 
-    fs.readFile(CREDENTIALS_PATH, (err, content) => {
-
-        if(err){
-            console.log(err);
-            _callback(err);
-            return;
-        }
-        // Authorize a client with credentials, then call the Google Sheets API.
-        authorize(JSON.parse(content), _callback);
-    });
-}
-
-
-/**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
- */
-function authorize(credentials, _callback) {
-
-    var { client_secret, client_id, redirect_uris } = credentials.web;
-
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-
-    // Check if we have previously stored a token.
-    fs.readFile(TOKEN_PATH, (err, token) => {
-
-        if (err){
-            //remove below code bacause this app cannot get user's input
-            //return get_new_token(oAuth2Client, _callback);
-            console.log(err);
-            _callback(err);
-            return;
-        }
-
-        oAuth2Client.setCredentials(JSON.parse(token));
-        g.auth = oAuth2Client; // auth is global resource
-
-        console.log('setting up authorize is successful');
-        _callback(undefined);
-    });
-}
-
-/**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
- * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback for the authorized client.
- */
-function get_new_token(oAuth2Client, _callback) {
-    
-    const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: SCOPES,
-    });
-
-    console.log('Authorize this app by visiting this url:', authUrl);
-
-    oAuth2Client.getToken('4/0AY0e-g4vp4k25b5E5KNTys6xFZTGziU6ixn1jEBZ7Cx40Es2uEa6k0ckNZCacw1A8MdlmQ', (err, token) => {
-
-        if (err) return console.error('Error while trying to retrieve access token', err);
-        oAuth2Client.setCredentials(token);
-
-        // Store the token to disk for later program executions
-        fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-            if (err) return console.error(err);
-            console.log('Token stored to', TOKEN_PATH);
-        });
-
-        _callback(oAuth2Client);
-    });
-}
-
-function get_sheet(sheet_id, _callback){
-
-    if(g.auth == undefined){
+    if(auth == undefined){
         console.log('auth is not set condition');
-        _callback('auth is not set condition');
+        __callback('auth is not set condition');
         return;
     }
-
-    var auth  = g.auth;
 
     var sheets = google.sheets({ version: 'v4', auth });
 
@@ -214,7 +124,7 @@ function get_sheet(sheet_id, _callback){
 
         if (err){
             console.log('fail with getting spc_list from google server (api err) ' + err);
-            _callback(err);
+            __callback(err);
             return;
         }
 
@@ -222,20 +132,19 @@ function get_sheet(sheet_id, _callback){
 
         if (rows.length){
             console.log('success with setting up spc sheet information');
-            _callback(undefined);
+            __callback(undefined);
             return;
         }else{
             
             console.log('spc sheet information is empty');
-            _callback(GSS_V4_ERR.CANNOT_FOUND);
+            __callback(GSS_V4_ERR.CANNOT_FOUND);
             return;
         }
     });
 }
 
-function cleanup_sheet(sheet_id, _callback){
+function cleanup_sheet(auth, sheet_id, __callback){
 
-    var auth = g.auth;
     var sheets = google.sheets({ version: 'v4', auth });
 
     var cleanup_datas = [];
@@ -247,12 +156,12 @@ function cleanup_sheet(sheet_id, _callback){
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_FINANCE){
         cleanup_datas = build_finance_sheet_cleanup_data();
     }else{
-        _callback('undefiend sheet type in update_sheet');
+        __callback('undefiend sheet type in update_sheet');
         return;
     }
 
     var resources = {
-        auth: g.auth,
+        auth: auth,
         spreadsheetId: sheet_id,
         resource:{
             valueInputOption: "RAW",
@@ -262,38 +171,15 @@ function cleanup_sheet(sheet_id, _callback){
 
     sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
         if(err){
-            _callback(err);
+            __callback(err);
             return;
         }
-        _callback(undefined, result);
+        __callback(undefined, result);
     });
 }
 
+function update_sheet(auth, sheet_id, tiker, income_state_datas, balance_sheet_datas, cash_flow_datas, __callback){
 
-// sample data
-    // data:[
-    //     {
-    //         range: g.sheet_name + "!A3", // Update single cell
-    //         values: [[tiker]]
-    //     }, 
-    //     // {
-    //     //     range: "Sheet1!B4:B6", // Update a column
-    //     //     values: [["B4"], ["B5"], ["B6"]]
-    //     // }, 
-    //     // {
-    //     //     range: "Sheet1!C4:E4", // Update a row
-    //     //     values: [["C4", "D4", "E4"]]
-    //     // }, 
-    //     // {
-    //     //     range: "Sheet1!F5:H6", // Update a 2d range
-    //     //     values: [["F5", "F5"], ["H6", "H6"]]
-    //     // }
-    // ]
-
-
-function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, cash_flow_datas, _callback){
-
-    var auth = g.auth;
     var sheets = google.sheets({ version: 'v4', auth });
 
     var update_datas = undefined;
@@ -305,12 +191,12 @@ function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, 
     }else if(sheet_id == enum_sheet_types.SPREADSHEET_ID_FINANCE){
         update_datas = build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas);
     }else{
-        _callback('undefiend sheet type in update_sheet');
+        __callback('undefiend sheet type in update_sheet');
         return;
     }
 
     var resources = {
-        auth: g.auth,
+        auth: auth,
         spreadsheetId: sheet_id,
         resource:{
             valueInputOption: "RAW",
@@ -320,10 +206,10 @@ function update_sheet(sheet_id, tiker, income_state_datas, balance_sheet_datas, 
 
     sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
         if(err){
-            _callback(err);
+            __callback(err);
             return;
         }
-        _callback(undefined, result);
+        __callback(undefined, result);
     });
 }
 
@@ -767,8 +653,28 @@ function find_row_idx(row_col_str, data_set){
     };
 }
 
-module.exports.run = run;
 module.exports.get_sheet = get_sheet;
 module.exports.update_sheet = update_sheet;
 module.exports.cleanup_sheet = cleanup_sheet;
 module.exports.enum_sheet_types = enum_sheet_types;
+
+
+// sample data
+    // data:[
+    //     {
+    //         range: g.sheet_name + "!A3", // Update single cell
+    //         values: [[tiker]]
+    //     }, 
+    //     // {
+    //     //     range: "Sheet1!B4:B6", // Update a column
+    //     //     values: [["B4"], ["B5"], ["B6"]]
+    //     // }, 
+    //     // {
+    //     //     range: "Sheet1!C4:E4", // Update a row
+    //     //     values: [["C4", "D4", "E4"]]
+    //     // }, 
+    //     // {
+    //     //     range: "Sheet1!F5:H6", // Update a 2d range
+    //     //     values: [["F5", "F5"], ["H6", "H6"]]
+    //     // }
+    // ]
