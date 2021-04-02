@@ -17,6 +17,13 @@ const SHEET_CREDENTIALS_PATH = './config/credentials_sheet.json';
 const TOKEN_PATH_DRIVE = './config/token_drive.json';
 const CREDENTIALS_PATH_DRIVE = './config/credentials_drive.json';
 
+const STOCK_ANALYSIS_FILE_NAME_PREFIX = 'US Stock Analysis' // prefix of file name 
+const FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Finance Type)';
+const NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Normal Type)';
+const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Reits Type)';
+
+const PARENT_STOCK_ANALYSIS_FOLDER_NAME = 'US Stock Anaysis';
+
 var args = process.argv.slice(2);
 
 var param = {}
@@ -62,14 +69,20 @@ if(args.length == 1){
     run_mode = 1;
 }
 
-var req_sheet_type = undefined
+var g = {} // globals
+
+g.req_sheet_type = undefined
+g.template_file_name = undefined;
     
 if(['finance', 'f'].includes(param.stock_type)){
-    req_sheet_type = data_writer.enum_sheet_types.SPREADSHEET_ID_FINANCE;
+    g.req_sheet_type = data_writer.enum_sheet_types.SPREADSHEET_ID_FINANCE;
+    g.template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
 }else if(['normal', 'n'].includes(param.stock_type)){
-    req_sheet_type = data_writer.enum_sheet_types.SPREADSHEET_ID_NORMAL;
+    g.req_sheet_type = data_writer.enum_sheet_types.SPREADSHEET_ID_NORMAL;
+    g.template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
 }else if(['reits', 'r'].includes(param.stock_type)){
-    req_sheet_type = data_writer.enum_sheet_types.SPREADSHEET_ID_REITS;
+    g.req_sheet_type = data_writer.enum_sheet_types.SPREADSHEET_ID_REITS;
+    g.template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
 }else{
     console.log('invalid stock type : \n' + useage_string);
     process.exit(1);
@@ -115,11 +128,11 @@ if(run_mode == 0){
 
                 var validate_sample_data_type = undefined;
 
-                if(req_sheet_type == data_writer.enum_sheet_types.SPREADSHEET_ID_REITS){
+                if(g.req_sheet_type == data_writer.enum_sheet_types.SPREADSHEET_ID_REITS){
                     validate_sample_data_type = 'Rental Revenue';
-                }else if(req_sheet_type == data_writer.enum_sheet_types.SPREADSHEET_ID_NORMAL){
+                }else if(g.req_sheet_type == data_writer.enum_sheet_types.SPREADSHEET_ID_NORMAL){
                     validate_sample_data_type = 'Cost Of Revenues';
-                }else if(req_sheet_type == data_writer.enum_sheet_types.SPREADSHEET_ID_FINANCE){
+                }else if(g.req_sheet_type == data_writer.enum_sheet_types.SPREADSHEET_ID_FINANCE){
                     validate_sample_data_type = 'Provision For Loan Losses';
                 }
 
@@ -128,54 +141,103 @@ if(run_mode == 0){
                     process.exit(1);
                 };
 
-                sheet_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.spreadsheet, SHEET_CREDENTIALS_PATH, SHEET_TOKEN_PATH);
+                var sheet_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.spreadsheet, SHEET_CREDENTIALS_PATH, SHEET_TOKEN_PATH);
 
-                sheet_authenticator.get_auth_obj(function(err, auth){
+                sheet_authenticator.get_auth_obj(function(err, sheet_auth){
 
                     if(err){
                         console.log('auth fail.');
                         process.exit(1);
                     }
     
-                    data_writer.cleanup_sheet(auth, req_sheet_type, function(e){
+                    data_writer.cleanup_sheet(sheet_auth, g.req_sheet_type, function(err){
 
-                        if(e){
-                            console.log(e);
+                        if(err){
+                            console.log(err);
                             process.exit(1);
                         }
 
-                        console.log('1. cleanup complete!!!!');
+                        console.log('1/3. cleanup complete!!!!');
 
-                        data_writer.update_sheet(auth, req_sheet_type, param.tiker, income_state, balance_sheet, cash_flow, function(e){
-                            if(e){
-                                console.log(e);
+                        data_writer.update_sheet(sheet_auth, g.req_sheet_type, param.tiker, income_state, balance_sheet, cash_flow, function(err){
+
+                            if(err){
+                                console.log(err);
                                 process.exit(1);
                             }
-                            console.log('2. set complete!!!!');
 
-                            drive_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.drive, CREDENTIALS_PATH_DRIVE, TOKEN_PATH_DRIVE);
+                            console.log('2/3. set complete!!!!');
 
-                            drive_authenticator.get_auth_obj(function(err, auth){
+                            var drive_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.drive, CREDENTIALS_PATH_DRIVE, TOKEN_PATH_DRIVE);
+
+                            drive_authenticator.get_auth_obj(function(err, drive_auth){
                                 
                                 if(err){
                                     console.log(err);
                                     process.exit(1);
                                 }
 
-                                gl_driver.search_file(auth, 'US Stock Analysis - Template(Normal Type)', function(err, file){
+                                //search template file
+                                gl_driver.search_file(drive_auth, g.template_file_name, function(err, template_file_obj){
                                     if(err){
                                         console.log(err);
                                         process.exit(1);
                                     }
 
-                                    gl_driver.copy_file(auth, file, function(err, copied_file_obj){
+                                    //copy template file
+                                    gl_driver.copy_file(drive_auth, template_file_obj, function(err, copied_file_obj){
                                         if(err){
                                             console(err);
                                             process.exit(1);
                                         }
 
-                                        console.log('test');
-                                        process.exit(0);
+                                        var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + param.tiker;
+
+                                        //rename copied template file
+                                        gl_driver.rename_file(drive_auth, copied_file_obj, generated_file_name, function(err, renamed_file){
+
+                                            if(err){
+                                                console(err);
+                                                process.exit(1);
+                                            }
+
+                                            //search parent stock analysis folder
+                                            gl_driver.search_file(drive_auth, PARENT_STOCK_ANALYSIS_FOLDER_NAME, function(err, parent_stock_folder_obj){
+
+                                                if(err){
+                                                    console(err);
+                                                    process.exit(1);
+                                                }
+
+
+                                                //get filelist in parent stock foler
+                                                gl_driver.get_file_list_in_folder(drive_auth, parent_stock_folder_obj, function(err, file_obj_list){
+
+                                                    if(err){
+                                                        console(err);
+                                                        process.exit(1);
+                                                    }
+
+                                                    //remove duplicated file
+                                                    file_obj_list.forEach(file_obj => {
+                                                        if(file_obj['name'] != generated_file_name) return;
+
+                                                        gl_driver.delete_file(drive_auth, file_obj, ()=>{});                                                        
+                                                    });
+
+                                                    //move into parent stock folder
+                                                    gl_driver.move_file(drive_auth, renamed_file, parent_stock_folder_obj, function(err, moved_file_obj){
+                                                        if(err){
+                                                            console(err);
+                                                            process.exit(1);
+                                                        }
+
+                                                        console.log('3/3. finish!!! generated file -----> ' + moved_file_obj['name']);
+                                                        process.exit(0);
+                                                    });
+                                                });
+                                            });
+                                        });
                                     });
                                 });
                             });
@@ -188,14 +250,16 @@ if(run_mode == 0){
 
 }else{
 
-    gl_api_auth.get_auth_obj(function(err, auth){
+    var sheet_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.spreadsheet, SHEET_CREDENTIALS_PATH, SHEET_TOKEN_PATH);
+
+    sheet_authenticator.get_auth_obj(function(err, sheet_auth){
 
         if(err){
             console.log('auth fail.');
             process.exit(1);
         }
 
-        data_writer.cleanup_sheet(req_sheet_type, function(e){
+        data_writer.cleanup_sheet(sheet_auth, g.req_sheet_type, function(e){
             if(e){
                 console.log(e);
                 process.exit(1);
