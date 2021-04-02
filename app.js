@@ -232,7 +232,7 @@ if(run_mode == 0){
                                                             process.exit(1);
                                                         }
 
-                                                        console.log('3/3. finish!!! generated file -----> ' + moved_file_obj['name']);
+                                                        console.log('3/3. finish!!! generated file name :: [' + generated_file_name + ']');
                                                         process.exit(0);
                                                     });
                                                 });
