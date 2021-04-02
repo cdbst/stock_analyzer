@@ -50,7 +50,7 @@ class Authenticator {
 
             o_auth2_client.setCredentials(JSON.parse(token));
 
-            console.log('setting up authorize is successful');
+            //console.log('setting up authorize is successful');
             __callback(undefined, o_auth2_client);
         });
     };
