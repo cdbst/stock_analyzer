@@ -6,6 +6,16 @@ const api_router = express.Router();
 const data_reader = require('./data_reader.js');
 const data_writer = require('./data_writer.js');
 const gl_api_auth = require('./google_api_auth.js');
+const gl_driver = require('./google_driver');
+
+// The file token.json stores the user's access and refresh tokens, and is
+// created automatically when the authorization flow completes for the first
+// time.
+const SHEET_TOKEN_PATH = './config/token_sheet.json';
+const SHEET_CREDENTIALS_PATH = './config/credentials_sheet.json';
+
+const TOKEN_PATH_DRIVE = './config/token_drive.json';
+const CREDENTIALS_PATH_DRIVE = './config/credentials_drive.json';
 
 var args = process.argv.slice(2);
 
@@ -75,7 +85,6 @@ app.listen(process.env.PORT || 8080, function () {
     console.log('run -> lpkakaoplus API server ' + (process.env.PORT || 8080));
 });
 
-
 if(run_mode == 0){
 
     data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type.income_statement, function(err, income_state_data){
@@ -119,7 +128,9 @@ if(run_mode == 0){
                     process.exit(1);
                 };
 
-                gl_api_auth.get_auth_obj(function(err, auth){
+                sheet_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.spreadsheet, SHEET_CREDENTIALS_PATH, SHEET_TOKEN_PATH);
+
+                sheet_authenticator.get_auth_obj(function(err, auth){
 
                     if(err){
                         console.log('auth fail.');
@@ -141,7 +152,33 @@ if(run_mode == 0){
                                 process.exit(1);
                             }
                             console.log('2. set complete!!!!');
-                            process.exit(0);
+
+                            drive_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.drive, CREDENTIALS_PATH_DRIVE, TOKEN_PATH_DRIVE);
+
+                            drive_authenticator.get_auth_obj(function(err, auth){
+                                
+                                if(err){
+                                    console.log(err);
+                                    process.exit(1);
+                                }
+
+                                gl_driver.search_file(auth, 'US Stock Analysis - Template(Normal Type)', function(err, file){
+                                    if(err){
+                                        console.log(err);
+                                        process.exit(1);
+                                    }
+
+                                    gl_driver.copy_file(auth, file, function(err, copied_file_obj){
+                                        if(err){
+                                            console(err);
+                                            process.exit(1);
+                                        }
+
+                                        console.log('test');
+                                        process.exit(0);
+                                    });
+                                });
+                            });
                         });
                     });
                 });
