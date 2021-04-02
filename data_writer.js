@@ -98,16 +98,18 @@ const reits_sheet_ranges = [
     '!B41:G41', // 기타 유동부채
     '!B45:G45', // 영업활동 현금흐름
     '!B47:G47', // CAPEX
-    '!B48:G48', // 보통주발행 수익
-    '!B49:G49', // 배당지출
-    '!B51:G51', // 보통주매입
-    '!B52:G52', // Levered FCF
-    '!B53:G53', // FCF/Share
-    '!B55:G55', // 임대수익
-    '!B56:G56', // 임대지출
-    '!B57:G57', // 순이자비용
-    '!B60:G60', // FFO/Share
-    '!B61:G61', // AFFO/Share
+    '!B48:G48', // 배당지출
+    '!B50:G50', // 보통주 발행 수익
+    '!B51:G51', // 보통주 매입
+    '!B52:G52', // 우선주 발행 수익
+    '!B53:G53', // 우선주 매입    
+    '!B54:G54', // Levered FCF
+    '!B55:G55', // FCF/Share
+    '!B57:G57', // 임대수익
+    '!B58:G58', // 임대지출
+    '!B59:G59', // 순이자비용
+    '!B62:G62', // FFO/Share
+    '!B63:G63', // AFFO/Share
 ];
 
 var g = {};
@@ -483,9 +485,11 @@ function build_reits_sheet_data(tiker, income_state_datas, balance_sheet_datas, 
 
     var cashflow_from_operations = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Operations', cash_flow_datas.data));
     var capex = get_row_datas(years, cash_flow_datas, find_row_idx('Acquisition of Real Estate Assets', cash_flow_datas.data));
-    var issuance_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Common Stock', cash_flow_datas.data));
     var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
-    var repurchase_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
+    var issuance_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Common Stock', cash_flow_datas.data));
+    var repurchase_paids_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
+    var issuance_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Preferred Stock ', cash_flow_datas.data));
+    var repurchase_paids_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Preferred Stock ', cash_flow_datas.data));
 
     var levered_free_cashflow = get_row_datas(years, cash_flow_datas, find_row_idx('Levered Free Cash Flow', cash_flow_datas.data));
     var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
@@ -524,9 +528,11 @@ function build_reits_sheet_data(tiker, income_state_datas, balance_sheet_datas, 
         other_current_liabilities,
         cashflow_from_operations,
         capex,
-        issuance_of_common_stock,
         dividends_paids,
-        repurchase_paids,
+        issuance_of_common_stock,
+        repurchase_paids_of_common_stock,
+        issuance_of_preferred_stock,
+        repurchase_paids_of_preferred_stock,
         levered_free_cashflow,
         fcf_per_shares,
         rental_revenue,
