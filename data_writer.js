@@ -31,7 +31,10 @@ const normal_sheet_ranges = [
     '!B38:G38', // Levered FCF
     '!B39:G39', // FCF / share
     '!B41:G41', // 배당 지출
-    '!B43:G43' // 자사주 매입
+    '!B43:G43', // 보통주 매입
+    '!B44:G44', // 보통주발행 수익
+    '!B46:G45', // 우선주 매입
+    '!B46:G46', // 우선주발행 수익
 ];
 
 const finance_sheet_ranges = [
@@ -62,7 +65,10 @@ const finance_sheet_ranges = [
     '!B44:G44', // 재무활동 현금흐름
     '!B46:G46', // FCF/Share
     '!B48:G48', // 배당지출
-    '!B50:G50' // 보통주매입
+    '!B50:G50', // 보통주매입
+    '!B51:G51', // 우선주매입
+    '!B52:G52', // 보통주발행 수익
+    '!B53:G53' // 우선주발행 수익
 ];
 
 const reits_sheet_ranges = [
@@ -250,7 +256,10 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
     var levered_free_cash_flow = get_row_datas(years, cash_flow_datas, find_row_idx('Levered Free Cash Flow', cash_flow_datas.data));
     var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
     var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
-    var repurchase_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
+    var repurchase_paids_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
+    var issuance_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Common Stock', cash_flow_datas.data));
+    var repurchase_paids_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Preferred Stock ', cash_flow_datas.data));
+    var issuance_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Preferred Stock ', cash_flow_datas.data));
 
     cell_datas.push( // 반드시 순서대로 넣어야 함.
         [tiker],
@@ -277,7 +286,10 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
         levered_free_cash_flow,
         fcf_per_shares,
         dividends_paids,
-        repurchase_paids
+        repurchase_paids_of_common_stock,
+        issuance_of_common_stock,
+        repurchase_paids_of_preferred_stock,
+        issuance_of_preferred_stock
     );
 
     for(var i = 0; i < normal_sheet_ranges.length; i++){
@@ -355,7 +367,10 @@ function build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas
     var cash_from_financing = get_row_datas(years, cash_flow_datas, find_row_idx('Cash from Financing', cash_flow_datas.data));
     var fcf_per_shares = get_row_datas(years, cash_flow_datas, find_row_idx('Free Cash Flow / Share', cash_flow_datas.data));
     var dividends_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Common & Preferred Stock Dividends Paid', cash_flow_datas.data));
-    var repurchase_paids = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
+    var repurchase_paids_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Common Stock', cash_flow_datas.data));
+    var repurchase_paids_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Repurchase of Preferred Stock ', cash_flow_datas.data));
+    var issuance_of_common_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Common Stock', cash_flow_datas.data));
+    var issuance_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Preferred Stock ', cash_flow_datas.data));
 
     cell_datas.push( // 반드시 순서대로 넣어야 함.
         [tiker],
@@ -385,7 +400,10 @@ function build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas
         cash_from_financing,
         fcf_per_shares,
         dividends_paids,
-        repurchase_paids
+        repurchase_paids_of_common_stock,
+        repurchase_paids_of_preferred_stock,
+        issuance_of_common_stock,
+        issuance_of_preferred_stock
     );
 
     for(var i = 0; i < finance_sheet_ranges.length; i++){
@@ -638,7 +656,7 @@ function find_row_idx(row_col_str, data_set){
         for(var j = 0; j < superset.length; j++){
             var sub_set = superset[j];
 
-            if(sub_set[0]['value'] == row_col_str){
+            if(sub_set[0]['value'].trim() == row_col_str.trim()){
                 return {
                     superset : i,
                     subset : j

@@ -31,7 +31,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "args": ["set", "BAC", "finance"],
+            "args": ["set", "WFC", "finance"],
             "program": "${workspaceFolder}\\app.js"
         },
         {
