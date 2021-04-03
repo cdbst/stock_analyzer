@@ -2,9 +2,9 @@ var root_cas = require('ssl-root-cas/latest').create();
 var https = require('https');
 https.globalAgent.options.ca = root_cas;
 
-var zlib = require('zlib');
+const zlib = require('zlib');
 
-var enum_financial_data_type = {
+const enum_financial_data_type = {
     income_statement : 'income-statement',
     balance_sheet : 'balance-sheet',
     cash_flow_statement : 'cash-flow-statement'
