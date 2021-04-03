@@ -128,9 +128,6 @@ const g_sheet_rows_map = {
 
 const YAHOO_FINANCE_URL = 'https://finance.yahoo.com/quote/';
 
-var g = {};
-g.sheet_name = 'summary';
-
 class SheetOperator {
 
     constructor(_stock_type, _sheet_name, _auth){
@@ -232,7 +229,7 @@ class SheetOperator {
             }
     
             cleanup_data.push({
-                range: g.sheet_name + _range, 
+                range: this.sheet_name + _range, 
                 values: val
             });
         });
