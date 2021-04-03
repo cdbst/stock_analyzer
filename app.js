@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const api_router = express.Router();
 
-const data_reader = require('./data_reader.js');
+const seeking_alpha = require('./seeking_alpha.js');
 const gl_spreadsheet = require('./google_spreadsheet.js');
 const gl_api_auth = require('./google_api_auth.js');
 const gl_driver = require('./google_driver');
@@ -142,7 +142,7 @@ if(run_mode == 0){
 
 function get_data_from_seeking_alpha(__callback){
 
-    data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type.income_statement, function(err, income_state_data){
+    seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.income_statement, function(err, income_state_data){
 
         if(err){
             console.error(err);
@@ -152,7 +152,7 @@ function get_data_from_seeking_alpha(__callback){
         console.log('Phase 1. get income state data from seekingalpha success');
         var income_state = JSON.parse(income_state_data);
     
-        data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type.balance_sheet, function(err, balance_sheet_data){
+        seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.balance_sheet, function(err, balance_sheet_data){
             if(err){
                 console.error(err);
                 process.exit(1);
@@ -161,7 +161,7 @@ function get_data_from_seeking_alpha(__callback){
             console.log('Phase 1. get balance sheet data from seekingalpha success');
             var balance_sheet = JSON.parse(balance_sheet_data);
     
-            data_reader.get_financial_data(param.tiker, data_reader.enum_financial_data_type.cash_flow_statement, function(err, cash_flow_data){
+            seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.cash_flow_statement, function(err, cash_flow_data){
     
                 if(err){
                     console.error(err);
@@ -181,7 +181,7 @@ function get_data_from_seeking_alpha(__callback){
                     validate_sample_data_type = 'Provision For Loan Losses';
                 }
 
-                if(data_reader.find_data_type_in_dataset(validate_sample_data_type, income_state) == false){
+                if(seeking_alpha.find_data_type_in_dataset(validate_sample_data_type, income_state) == false){
                     console.error('invalid data format : expected type is : ' + param.stock_type);
                     process.exit(1);
                 };
