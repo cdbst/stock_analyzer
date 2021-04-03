@@ -29,7 +29,7 @@ var args = process.argv.slice(2);
 var param = {}
 param.mode = args[0];
 
-const useage_string =   'invalid argument : usage : node app.js {mode} - [mode : set, cleanup]\n' +
+const useage_string =   'invalid argument :\n usage : node app.js {mode} - [mode : set, cleanup]\n' +
                         '   set mode useage : {tiker} {sheet_type}\n' +
                         '       {tiker} - [stock_type]\n' + 
                         '       {sheet_type} - [finance(f), normal(n), reits(r)]\n' +
