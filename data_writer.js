@@ -7,6 +7,7 @@ var enum_sheet_types = {
 }
 
 const normal_sheet_ranges = [
+    '!A1',
     '!A3', // 티커
     '!H8', // Month end
     '!B9:G9', // 연도
@@ -38,6 +39,7 @@ const normal_sheet_ranges = [
 ];
 
 const finance_sheet_ranges = [
+    '!A1',
     '!A3', // tiker
     '!H8', // month end 
     '!B9:G9', // year : row header
@@ -72,6 +74,7 @@ const finance_sheet_ranges = [
 ];
 
 const reits_sheet_ranges = [
+    '!A1',
     '!A3', // tiker
     '!H8', // month end 
     '!B9:G9', // year : row header
@@ -111,6 +114,8 @@ const reits_sheet_ranges = [
     '!B62:G62', // FFO/Share
     '!B63:G63', // AFFO/Share
 ];
+
+const YAHOO_FINANCE_URL = 'https://finance.yahoo.com/quote/';
 
 var g = {};
 g.sheet_name = 'summary';
@@ -264,6 +269,7 @@ function build_normal_sheet_data(tiker, income_state_datas, balance_sheet_datas,
     var issuance_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Preferred Stock ', cash_flow_datas.data));
 
     cell_datas.push( // 반드시 순서대로 넣어야 함.
+        [YAHOO_FINANCE_URL + tiker],
         [tiker],
         ['<Month end : ' + month_end + '>'],
         years,
@@ -375,6 +381,7 @@ function build_finance_sheet_data(tiker, income_state_datas, balance_sheet_datas
     var issuance_of_preferred_stock = get_row_datas(years, cash_flow_datas, find_row_idx('Issuance of Preferred Stock ', cash_flow_datas.data));
 
     cell_datas.push( // 반드시 순서대로 넣어야 함.
+        [YAHOO_FINANCE_URL + tiker],
         [tiker],
         ['<Month end : ' + month_end + '>'],
         years,
@@ -502,6 +509,7 @@ function build_reits_sheet_data(tiker, income_state_datas, balance_sheet_datas, 
     var affo_per_share = get_row_datas(years, income_state_datas, find_row_idx('Adjusted FFO Per Share (Diluted)', income_state_datas.data));
 
     cell_datas.push( // 반드시 순서대로 넣어야 함.
+        [YAHOO_FINANCE_URL + tiker],
         [tiker],
         ['<Month end : ' + month_end + '>'],
         years,
