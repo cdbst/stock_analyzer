@@ -10,13 +10,18 @@ const enum_financial_data_type = {
     cash_flow_statement : 'cash-flow-statement'
 }
 
-var get_financial_data = function(tiker, financial_data_type, __callback){
+const enum_req_period_type = {
+    annual : 'annual',
+    quarterly : 'quarterly'
+}
+
+var get_financial_data = function(tiker, financial_data_type, period_type, __callback){
 
     // url example : https://seekingalpha.com/symbol/KO/financials-data?period_type=annual&statement_type=cash-flow-statement&order_type=latest_right&is_pro=false
     var get_options = {
         host: 'seekingalpha.com',
         port: '443',
-        path: '/symbol/' + tiker + '/financials-data?period_type=annual&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
+        path: '/symbol/' + tiker + '/financials-data?period_type='+ period_type +'&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
         method: 'GET',
         headers: {
             'accept' : '*/*',
@@ -88,3 +93,4 @@ function find_data_type_in_dataset(data_type, date_set){
 module.exports.get_financial_data = get_financial_data;
 module.exports.find_data_type_in_dataset = find_data_type_in_dataset;
 module.exports.enum_financial_data_type = enum_financial_data_type;
+module.exports.enum_req_period_type = enum_req_period_type;

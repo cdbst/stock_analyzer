@@ -213,6 +213,9 @@ class SheetOperator {
         var row_segments = Object.keys(this.sheet_row_map);
         var cleanup_sheet_ranges = [];
 
+        cleanup_sheet_ranges.push.apply(cleanup_sheet_ranges, Object.values(g_sheet_rows_map.common_cells));
+
+
         row_segments.forEach((row_segment) =>{
             var row_ranges = Object.keys(this.sheet_row_map[row_segment]);
             cleanup_sheet_ranges.push.apply(cleanup_sheet_ranges, row_ranges);

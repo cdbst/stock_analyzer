@@ -100,15 +100,23 @@ app.listen(process.env.PORT || 8080, function () {
 
 if(run_mode == 0){
 
-    get_data_from_seeking_alpha((balance_sheet_data, income_state_data, cashflow_data) =>{
-        console.log('Phase 1 complete. get data from seekingalpha success');
+    get_data_from_seeking_alpha(seeking_alpha.enum_req_period_type.annual, (period_type, balance_sheet_data, income_state_data, cashflow_data) =>{
+        console.log('Phase 1 complete. get data from seekingalpha success - ' + period_type);
 
-        setup_data_into_sheet(balance_sheet_data, income_state_data, cashflow_data, ()=>{
-            console.log('Phase 2 complete. updating sheet is success');
+        setup_data_into_sheet(period_type, balance_sheet_data, income_state_data, cashflow_data, ()=>{
+            console.log('Phase 2 complete. updating sheet is success - ' + period_type);
 
-            create_stock_analysis_file(()=>{
-                console.log('Phase 3 complete. success with creating stock anaysis file');
-                process.exit(0);
+            get_data_from_seeking_alpha(seeking_alpha.enum_req_period_type.quarterly, (period_type, balance_sheet_data, income_state_data, cashflow_data) =>{
+                console.log('Phase 3 complete. get data from seekingalpha success - ' + period_type);
+        
+                setup_data_into_sheet(period_type, balance_sheet_data, income_state_data, cashflow_data, ()=>{
+                    console.log('Phase 4 complete. updating sheet is success - ' + period_type);
+        
+                    create_stock_analysis_file(()=>{
+                        console.log('Phase 5 complete. success with creating stock anaysis file');
+                        process.exit(0);
+                    });
+                });
             });
         });
     });
@@ -126,7 +134,7 @@ if(run_mode == 0){
 
         console.log('Phase 1. success with getting auth.');
 
-        sheet_operator = new gl_spreadsheet.SheetOperator(g.req_sheet_type, 'summary', sheet_auth);
+        sheet_operator = new gl_spreadsheet.SheetOperator(g.req_sheet_type, 'summary-annual', sheet_auth);
 
         sheet_operator.cleanup_sheet((err)=>{
             if(err){
@@ -134,41 +142,50 @@ if(run_mode == 0){
                 process.exit(1);
             }
 
-            console.log('Phase 2. cleaning up sheet is success');
-            process.exit(0);
+            sheet_operator = new gl_spreadsheet.SheetOperator(g.req_sheet_type, 'summary-quarterly', sheet_auth);
+
+            sheet_operator.cleanup_sheet((err)=>{
+                if(err){
+                    console.error('fail : cleanup sheet\n' + err);
+                    process.exit(1);
+                }
+
+                console.log('Phase 2. cleaning up sheet is success');
+                process.exit(0);
+            });
         });
     });
 }
 
-function get_data_from_seeking_alpha(__callback){
+function get_data_from_seeking_alpha(period_type, __callback){
 
-    seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.income_statement, function(err, income_state_data){
+    seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.income_statement, period_type, function(err, income_state_data){
 
         if(err){
             console.error(err);
             process.exit(1);
         }
         
-        console.log('Phase 1. get income state data from seekingalpha success');
+        console.log('... get income state data from seekingalpha success');
         var income_state = JSON.parse(income_state_data);
     
-        seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.balance_sheet, function(err, balance_sheet_data){
+        seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.balance_sheet, period_type, function(err, balance_sheet_data){
             if(err){
                 console.error(err);
                 process.exit(1);
             }
 
-            console.log('Phase 1. get balance sheet data from seekingalpha success');
+            console.log('... get balance sheet data from seekingalpha success');
             var balance_sheet = JSON.parse(balance_sheet_data);
     
-            seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.cash_flow_statement, function(err, cash_flow_data){
+            seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.cash_flow_statement, period_type, function(err, cash_flow_data){
     
                 if(err){
                     console.error(err);
                     process.exit(1);
                 }
             
-                console.log('Phase 1. get cash flow data from seekingalpha success');
+                console.log('... get cash flow data from seekingalpha success');
                 var cash_flow = JSON.parse(cash_flow_data);
 
                 var validate_sample_data_type = undefined;
@@ -186,14 +203,14 @@ function get_data_from_seeking_alpha(__callback){
                     process.exit(1);
                 };
 
-                __callback(income_state, balance_sheet, cash_flow);
+                __callback(period_type, income_state, balance_sheet, cash_flow);
             });
         });
     });
 }
 
 
-function setup_data_into_sheet(income_state_data, balance_sheet_data, cashflow_data, __callback){
+function setup_data_into_sheet(period_type, income_state_data, balance_sheet_data, cashflow_data, __callback){
 
     var sheet_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.spreadsheet, SHEET_CREDENTIALS_PATH, SHEET_TOKEN_PATH);
 
@@ -203,8 +220,19 @@ function setup_data_into_sheet(income_state_data, balance_sheet_data, cashflow_d
             process.exit(1);
         }
 
+        var sheet_name = undefined;
+
+        if(period_type == seeking_alpha.enum_req_period_type.annual){
+            sheet_name = 'summary-annual';
+        }else if(period_type == seeking_alpha.enum_req_period_type.quarterly){
+            sheet_name = 'summary-quarterly';
+        }else{
+            console.error('fail : invalid period type\n');
+            process.exit(1);
+        }
+
         //Sheet operator for annually data.
-        sheet_operator = new gl_spreadsheet.SheetOperator(g.req_sheet_type, 'summary', sheet_auth);
+        sheet_operator = new gl_spreadsheet.SheetOperator(g.req_sheet_type, sheet_name, sheet_auth);
 
         sheet_operator.cleanup_sheet((err)=>{
             if(err){
@@ -212,7 +240,7 @@ function setup_data_into_sheet(income_state_data, balance_sheet_data, cashflow_d
                 process.exit(1);
             }
 
-            console.log('Phase 2. cleaning up sheet is success');
+            console.log('... cleaning up sheet is success');
 
             sheet_operator.update_sheet(param.tiker, income_state_data, balance_sheet_data, cashflow_data, (err)=>{
 
@@ -238,7 +266,7 @@ function create_stock_analysis_file(__callback){
             process.exit(1);
         }
 
-        console.log('Phase 3. success : get google api auth');
+        console.log('... success : get google api auth');
 
         //search template file
         gl_driver.search_file(drive_auth, g.template_file_name, function(err, template_file_obj){
@@ -247,7 +275,7 @@ function create_stock_analysis_file(__callback){
                 process.exit(1);
             }
 
-            console.log('Phase 3. success : search template file');
+            console.log('... success : search template file');
 
             //copy template file
             gl_driver.copy_file(drive_auth, template_file_obj, function(err, copied_file_obj){
@@ -256,7 +284,7 @@ function create_stock_analysis_file(__callback){
                     process.exit(1);
                 }
 
-                console.log('Phase 3. success : copy template file success');
+                console.log('... success : copy template file success');
 
                 var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + param.tiker;
 
@@ -268,7 +296,7 @@ function create_stock_analysis_file(__callback){
                         process.exit(1);
                     }
 
-                    console.log('Phase 3. success : rename file success');
+                    console.log('... success : rename file success');
 
                     //search parent stock analysis folder
                     gl_driver.search_file(drive_auth, PARENT_STOCK_ANALYSIS_FOLDER_NAME, function(err, parent_stock_folder_obj){
@@ -278,7 +306,7 @@ function create_stock_analysis_file(__callback){
                             process.exit(1);
                         }
 
-                        console.log('Phase 3. success : search parent stock analysis folder');
+                        console.log('... success : search parent stock analysis folder');
 
                         //get filelist in parent stock foler
                         gl_driver.get_file_list_in_folder(drive_auth, parent_stock_folder_obj, function(err, file_obj_list){
@@ -288,13 +316,13 @@ function create_stock_analysis_file(__callback){
                                 process.exit(1);
                             }
 
-                            console.log('Phase 3. success : get child file list in parent stock analysis folder');
+                            console.log('... success : get child file list in parent stock analysis folder');
 
                             //remove duplicated file
                             file_obj_list.forEach(file_obj => {
                                 if(file_obj['name'] != generated_file_name) return;
                                 gl_driver.delete_file(drive_auth, file_obj, ()=>{
-                                    console.log('Phase 3. notice : remove old file : [' + generated_file_name + ']');
+                                    console.log('... notice : remove old file : [' + generated_file_name + ']');
                                 });
                             });
 
@@ -305,7 +333,7 @@ function create_stock_analysis_file(__callback){
                                     process.exit(1);
                                 }
 
-                                console.log('Phase 3. success : move stock analysis file to parent stock analysis folder');
+                                console.log('... success : move stock analysis file to parent stock analysis folder : \n... created file name : [' + generated_file_name + ']');
                                 __callback();
                             });
                         });
