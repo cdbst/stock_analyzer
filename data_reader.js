@@ -10,10 +10,9 @@ var enum_financial_data_type = {
     cash_flow_statement : 'cash-flow-statement'
 }
 
-https://seekingalpha.com/symbol/KO/financials-data?period_type=annual&statement_type=cash-flow-statement&order_type=latest_right&is_pro=false
-
 var get_financial_data = function(tiker, financial_data_type, __callback){
 
+    // url example : https://seekingalpha.com/symbol/KO/financials-data?period_type=annual&statement_type=cash-flow-statement&order_type=latest_right&is_pro=false
     var get_options = {
         host: 'seekingalpha.com',
         port: '443',
