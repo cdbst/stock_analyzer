@@ -1,7 +1,7 @@
 const seeking_alpha = require('./seeking_alpha.js');
 const gl_spreadsheet = require('./google_spreadsheet.js');
 const gl_api_auth = require('./google_api_auth.js');
-const gl_driver = require('./google_driver');
+const gl_drive = require('./google_drive');
 
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
@@ -254,7 +254,7 @@ function create_stock_analysis_file(__callback){
         console.log('... success : get google api auth');
 
         //search template file
-        gl_driver.search_file(drive_auth, g.template_file_name, function(err, template_file_obj){
+        gl_drive.search_file(drive_auth, g.template_file_name, function(err, template_file_obj){
             if(err){
                 console.error(err);
                 process.exit(1);
@@ -263,7 +263,7 @@ function create_stock_analysis_file(__callback){
             console.log('... success : search template file');
 
             //copy template file
-            gl_driver.copy_file(drive_auth, template_file_obj, function(err, copied_file_obj){
+            gl_drive.copy_file(drive_auth, template_file_obj, function(err, copied_file_obj){
                 if(err){
                     console.error(err);
                     process.exit(1);
@@ -274,7 +274,7 @@ function create_stock_analysis_file(__callback){
                 var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + param.tiker;
 
                 //rename copied template file
-                gl_driver.rename_file(drive_auth, copied_file_obj, generated_file_name, function(err, renamed_file){
+                gl_drive.rename_file(drive_auth, copied_file_obj, generated_file_name, function(err, renamed_file){
 
                     if(err){
                         console.error(err);
@@ -284,7 +284,7 @@ function create_stock_analysis_file(__callback){
                     console.log('... success : rename file success');
 
                     //search parent stock analysis folder
-                    gl_driver.search_file(drive_auth, PARENT_STOCK_ANALYSIS_FOLDER_NAME, function(err, parent_stock_folder_obj){
+                    gl_drive.search_file(drive_auth, PARENT_STOCK_ANALYSIS_FOLDER_NAME, function(err, parent_stock_folder_obj){
 
                         if(err){
                             console.error(err);
@@ -294,7 +294,7 @@ function create_stock_analysis_file(__callback){
                         console.log('... success : search parent stock analysis folder');
 
                         //get filelist in parent stock foler
-                        gl_driver.get_file_list_in_folder(drive_auth, parent_stock_folder_obj, function(err, file_obj_list){
+                        gl_drive.get_file_list_in_folder(drive_auth, parent_stock_folder_obj, function(err, file_obj_list){
 
                             if(err){
                                 console.error(err);
@@ -306,13 +306,13 @@ function create_stock_analysis_file(__callback){
                             //remove duplicated file
                             file_obj_list.forEach(file_obj => {
                                 if(file_obj['name'] != generated_file_name) return;
-                                gl_driver.delete_file(drive_auth, file_obj, ()=>{
+                                gl_drive.delete_file(drive_auth, file_obj, ()=>{
                                     console.log('... notice : remove old file : [' + generated_file_name + ']');
                                 });
                             });
 
                             //move into parent stock folder
-                            gl_driver.move_file(drive_auth, renamed_file, parent_stock_folder_obj, function(err, moved_file_obj){
+                            gl_drive.move_file(drive_auth, renamed_file, parent_stock_folder_obj, function(err, moved_file_obj){
                                 if(err){
                                     console.error(err);
                                     process.exit(1);
