@@ -126,7 +126,7 @@ const g_sheet_rows_map = {
     }
 };
 
-const YAHOO_FINANCE_URL = 'https://finance.yahoo.com/quote/';
+const FINANCE_REFERENCE_URL = 'https://seekingalpha.com/symbol/';
 
 class SheetOperator {
 
@@ -278,7 +278,7 @@ class SheetOperator {
         update_datas.push(
             {
                 range: this.sheet_name + g_sheet_rows_map.common.url, //TODO: URL
-                values: [[YAHOO_FINANCE_URL + tiker]]
+                values: [[FINANCE_REFERENCE_URL + tiker]]
             },
             {
                 range: this.sheet_name + g_sheet_rows_map.common.tiker, //TODO: TIKER
