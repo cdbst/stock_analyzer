@@ -7,7 +7,7 @@ const enum_stock_types = {
 };
 
 const g_sheet_rows_map = {
-    common_cells : {
+    common : {
         url :'!A1', // URL
         tiker :'!A3', // 티커
         accounting_base_date : '!B9:G9', // 회계기준일자
@@ -213,7 +213,7 @@ class SheetOperator {
         var row_segments = Object.keys(this.sheet_row_map);
         var cleanup_sheet_ranges = [];
 
-        cleanup_sheet_ranges.push.apply(cleanup_sheet_ranges, Object.values(g_sheet_rows_map.common_cells));
+        cleanup_sheet_ranges.push.apply(cleanup_sheet_ranges, Object.values(g_sheet_rows_map.common));
 
 
         row_segments.forEach((row_segment) =>{
@@ -277,15 +277,15 @@ class SheetOperator {
         //Setting up common datas
         update_datas.push(
             {
-                range: this.sheet_name + g_sheet_rows_map.common_cells.url, //TODO: URL
+                range: this.sheet_name + g_sheet_rows_map.common.url, //TODO: URL
                 values: [[YAHOO_FINANCE_URL + tiker]]
             },
             {
-                range: this.sheet_name + g_sheet_rows_map.common_cells.tiker, //TODO: TIKER
+                range: this.sheet_name + g_sheet_rows_map.common.tiker, //TODO: TIKER
                 values: [[tiker]]
             },
             {
-                range: this.sheet_name + g_sheet_rows_map.common_cells.accounting_base_date, //TODO: 회계기준일자
+                range: this.sheet_name + g_sheet_rows_map.common.accounting_base_date, //TODO: 회계기준일자
                 values: [accounting_base_dates]
             },
         );
