@@ -319,6 +319,7 @@ function create_stock_analysis_file(__callback){
                                 }
 
                                 console.log('... success : move stock analysis file to parent stock analysis folder : \n... created file name : [' + generated_file_name + ']');
+                                console.log('LINK [' + generated_file_name + ']  --> \n' +  moved_file_obj['webViewLink']);
                                 __callback();
                             });
                         });

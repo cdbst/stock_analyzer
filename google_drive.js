@@ -137,7 +137,7 @@ function move_file(auth, file_obj, folder_obj, __callback){
             fileId: file_obj.id,
             addParents: folder_obj.id,
             removeParents: previous_parents,
-            fields: 'id, parents'
+            fields: 'id, parents, webViewLink'
         }, (err, res) => {
 
             if (err){
