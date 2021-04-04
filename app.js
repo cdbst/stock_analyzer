@@ -1,8 +1,3 @@
-
-const express = require('express');
-const app = express();
-const api_router = express.Router();
-
 const seeking_alpha = require('./seeking_alpha.js');
 const gl_spreadsheet = require('./google_spreadsheet.js');
 const gl_api_auth = require('./google_api_auth.js');
@@ -87,16 +82,6 @@ if(['finance', 'f'].includes(param.stock_type)){
     console.log('invalid stock type : \n' + useage_string);
     process.exit(1);
 }
-
-app.use('/api', api_router);
-
-app.get('/', function (req, res) {
-    res.send('test');
-});
-
-app.listen(process.env.PORT || 8080, function () {
-    console.log('run -> lpkakaoplus API server ' + (process.env.PORT || 8080));
-});
 
 if(run_mode == 0){
 
