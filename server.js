@@ -17,12 +17,13 @@ const SHEET_CREDENTIALS_PATH = './config/credentials_sheet.json';
 const DRIVE_TOKEN_PATH = './config/token_drive.json';
 const DRIVE_CREDENTIALS_PATH = './config/credentials_drive.json';
 
-const STOCK_ANALYSIS_FILE_NAME_PREFIX = 'US Stock Analysis' // prefix of file name 
+const STOCK_ANALYSIS_FILE_NAME_PREFIX = 'US Stock Analysis' // prefix of file name
 const FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Finance Type)';
 const NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Normal Type)';
 const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Reits Type)';
 
 const PARENT_STOCK_ANALYSIS_FOLDER_NAME = 'US Stock Anaysis';
+const PARENT_STOCK_ANALYSIS_FOLDER_URL = 'https://drive.google.com/drive/folders/1j71iRw3CjIphM9ngCR_zuLJumrexMGmI?usp=sharing';
 
 app.use(body_parser.json());
 app.use('/api', api_router);
@@ -90,13 +91,16 @@ setInterval(function() {
                 client_req.res_to_client('주식 분석 파일 템플릿을 찾을수 없는 상태입니다.');
             }
 
+            client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + tiker + ']가 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
+                                    ' 잠시후 확인 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
+
             client_req.create_stock_analysis_file(tiker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
                 if(_err){
-                    client_req.res_to_client('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
+                    console.log('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
                     return;
                 }
 
-                client_req.res_to_client('생성된 파일 : ' + _analysis_file + '\n' + _analysis_file_url);
+                console.log('생성된 파일 : ' + _analysis_file + '\n' + _analysis_file_url);
             });
         });
     });
