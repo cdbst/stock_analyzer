@@ -47,13 +47,14 @@ setInterval(function() {
 
     var client_req = new ClientRequest(0, _req, _res);
 
-    if(client_req.is_req_valid() == false){
-        console.error('client request has no stock tiker information');
-        client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
-        return;
-    }
+    // if(client_req.is_req_valid() == false){
+    //     console.error('client request has no stock tiker information');
+    //     client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
+    //     return;
+    // }
 
-    const tiker = client_req.get_req_parm_value('tiker');
+    // const tiker = client_req.get_req_parm_value('tiker');
+    const tiker = 'KO';
 
     if(tiker == undefined){
         console.error('client request has no stock tiker information');

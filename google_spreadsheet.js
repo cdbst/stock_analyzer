@@ -436,8 +436,6 @@ function setup_data_into_sheet(_sheet_auth, _stock_type, _sheet_name, _tiker, _i
             return;
         }
 
-        console.log('... cleaning up sheet is success');
-
         sheet_operator.update_sheet(_tiker, _income_state_data, _balance_sheet_data, _cashflow_data, (err)=>{
 
             if(err){

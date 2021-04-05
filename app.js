@@ -151,7 +151,6 @@ function get_data_from_seeking_alpha(period_type, __callback){
             process.exit(1);
         }
         
-        console.log('... get income state data from seekingalpha success');
         var income_state = JSON.parse(income_state_data);
     
         seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.balance_sheet, period_type, function(err, balance_sheet_data){
@@ -160,7 +159,6 @@ function get_data_from_seeking_alpha(period_type, __callback){
                 process.exit(1);
             }
 
-            console.log('... get balance sheet data from seekingalpha success');
             var balance_sheet = JSON.parse(balance_sheet_data);
     
             seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.cash_flow_statement, period_type, function(err, cash_flow_data){
@@ -170,7 +168,6 @@ function get_data_from_seeking_alpha(period_type, __callback){
                     process.exit(1);
                 }
             
-                console.log('... get cash flow data from seekingalpha success');
                 var cash_flow = JSON.parse(cash_flow_data);
 
                 var validate_sample_data_type = undefined;
