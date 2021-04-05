@@ -45,8 +45,6 @@ setInterval(function() {
  */
  api_router.post('/finance', function (_req, _res){
 
-    console.log(_req);
-
     var client_req = new ClientRequest(0, _req, _res);
 
     if(client_req.is_req_valid() == false){
