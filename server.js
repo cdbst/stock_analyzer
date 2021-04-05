@@ -61,9 +61,9 @@ setInterval(function() {
         return;
     }
 
-    tiker = tiker.toUpperCase();
-
     console.log('Client Rquest : ' + tiker);
+
+    tiker = tiker.toUpperCase();
 
     client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{ 
 
