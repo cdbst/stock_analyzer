@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const body_parser = require('body-parser');
 const api_router = express.Router();
 
 const seeking_alpha = require('./seeking_alpha.js');
@@ -24,6 +25,7 @@ const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME
 const PARENT_STOCK_ANALYSIS_FOLDER_NAME = 'US Stock Anaysis';
 
 app.use('/api', api_router);
+app.use(body_parser.json());
 
 app.get('/', function (req, res) {
     res.send('test'); 
@@ -42,8 +44,6 @@ setInterval(function() {
  * @description 'rest api' -  'getthreqexp' : 타이틀 홀더 카드의 특정 레벨 달성을 위해 필요한 기존카드의 최소 경험치를 계산함.
  */
  api_router.post('/finance', function (_req, _res){
-
-    console.log(this._req.body);
 
     var client_req = new ClientRequest(0, _req, _res);
 
