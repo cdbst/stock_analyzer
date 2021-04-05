@@ -116,6 +116,7 @@ class ClientRequest{
     is_req_valid(){
 
         if(this.request.body == undefined || this.request.body.action == undefined || this.request.body.action.params == undefined){
+            console.log(this.request.body);
             return false;
         }
         return true;
