@@ -90,7 +90,48 @@ function find_data_type_in_dataset(data_type, date_set){
     return false; // test code
 }
 
+function get_data_from_seeking_alpha(tiker, period_type, __callback){
+
+    get_financial_data(tiker, enum_financial_data_type.income_statement, period_type, function(err, income_state_data){
+
+        if(err){
+            console.error('fail : get financial data from seeking alpah');
+            __callback(err);
+            return;
+        }
+        
+        console.log('... get income state data from seekingalpha success');
+        var income_state = JSON.parse(income_state_data);
+    
+        get_financial_data(tiker, enum_financial_data_type.balance_sheet, period_type, function(err, balance_sheet_data){
+            if(err){
+                console.error('fail : get financial data from seeking alpah');
+                __callback(err);
+                return;
+            }
+
+            console.log('... get balance sheet data from seekingalpha success');
+            var balance_sheet = JSON.parse(balance_sheet_data);
+    
+            get_financial_data(tiker, enum_financial_data_type.cash_flow_statement, period_type, function(err, cash_flow_data){
+    
+                if(err){
+                    console.error('fail : get financial data from seeking alpah');
+                    __callback(err);
+                    return;
+                }
+            
+                console.log('... get cash flow data from seekingalpha success');
+                var cash_flow = JSON.parse(cash_flow_data);
+
+                __callback(undefined, income_state, balance_sheet, cash_flow, period_type);
+            });
+        });
+    });
+}
+
 module.exports.get_financial_data = get_financial_data;
 module.exports.find_data_type_in_dataset = find_data_type_in_dataset;
+module.exports.get_data_from_seeking_alpha = get_data_from_seeking_alpha;
 module.exports.enum_financial_data_type = enum_financial_data_type;
 module.exports.enum_req_period_type = enum_req_period_type;

@@ -424,8 +424,36 @@ class SheetOperator {
     }
 }
 
+function setup_data_into_sheet(_sheet_auth, _stock_type, _sheet_name, _tiker, _income_state_data, _balance_sheet_data, _cashflow_data, __callback){
+
+    //Sheet operator for annually data.
+    sheet_operator = new SheetOperator(_stock_type, _sheet_name, _sheet_auth);
+
+    sheet_operator.cleanup_sheet((err)=>{
+        if(err){
+            console.error('fail : cleanup sheet\n' + err);
+            __callback(err);
+            return;
+        }
+
+        console.log('... cleaning up sheet is success');
+
+        sheet_operator.update_sheet(_tiker, _income_state_data, _balance_sheet_data, _cashflow_data, (err)=>{
+
+            if(err){
+                console.error('fail : updating sheet\n' + err);
+                __callback(err);
+                return;
+            }
+
+            __callback(undefined);
+        });
+    });
+}
+
 module.exports.enum_stock_types = enum_stock_types;
 module.exports.SheetOperator = SheetOperator;
+module.exports.setup_data_into_sheet = setup_data_into_sheet;
 
 
 // sample data

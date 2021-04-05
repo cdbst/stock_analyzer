@@ -2,11 +2,31 @@ const express = require('express');
 const app = express();
 const api_router = express.Router();
 
+const seeking_alpha = require('./seeking_alpha.js');
+const gl_spreadsheet = require('./google_spreadsheet.js');
+const gl_api_auth = require('./google_api_auth.js');
+const gl_drive = require('./google_drive');
+
+// The file token.json stores the user's access and refresh tokens, and is
+// created automatically when the authorization flow completes for the first
+// time.
+const SHEET_TOKEN_PATH = './config/token_sheet.json';
+const SHEET_CREDENTIALS_PATH = './config/credentials_sheet.json';
+
+const DRIVE_TOKEN_PATH = './config/token_drive.json';
+const DRIVE_CREDENTIALS_PATH = './config/credentials_drive.json';
+
+const STOCK_ANALYSIS_FILE_NAME_PREFIX = 'US Stock Analysis' // prefix of file name 
+const FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Finance Type)';
+const NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Normal Type)';
+const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Reits Type)';
+
+const PARENT_STOCK_ANALYSIS_FOLDER_NAME = 'US Stock Anaysis';
 
 app.use('/api', api_router);
 
 app.get('/', function (req, res) {
-    res.send('test');
+    res.send('test'); 
 });
 
 app.listen(process.env.PORT || 8080, function () {
@@ -16,22 +36,230 @@ app.listen(process.env.PORT || 8080, function () {
 /**
  * @description 'rest api' -  'getthreqexp' : 타이틀 홀더 카드의 특정 레벨 달성을 위해 필요한 기존카드의 최소 경험치를 계산함.
  */
- api_router.post('/getthreqexp', function (req, res){
+ api_router.post('/finance', function (_req, _res){
 
-    if(req.body.action == null && req.body.action.params == null){
-        res_to_kakao_server(res, "invalid server error (invalid client request)");
-        return;      
+    var client_req = new ClientRequest(0, _req, _res);
+
+    // if(client_req.is_req_valid() == false){
+    //     console.error('client request has no stock tiker information');
+    //     client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
+    //     return;
+    // }
+
+    // const tiker = client_req.get_req_parm_value('tiker');
+    const tiker = 'KO';
+
+    if(tiker == undefined){
+        console.error('client request has no stock tiker information');
+        client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
+        return;
     }
 
-    const tiker = req.body.action.params.tiker; // title holder card level
+    client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{ 
+
+        if(_err){
+            client_req.res_to_client('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
+            return;
+        }
+        
+        client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, tiker, (_err, _stock_type)=>{ 
+            
+            if(_err){
+                client_req.res_to_client('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
+                return;
+            }
+            
+            var template_file_name = undefined;
+
+            if(_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
+                template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+            }else if(_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
+                template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+            }else if(_stock_type == gl_spreadsheet.enum_stock_types.REITS){
+                template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+            }else{
+                console.log('invalid stock type : \n' + useage_string);
+                client_req.res_to_client('주식 분석 파일 템플릿을 찾을수 없는 상태입니다.');
+            }
+
+            client_req.create_stock_analysis_file(tiker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
+                if(_err){
+                    client_req.res_to_client('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
+                    return;
+                }
+
+                client_req.res_to_client('생성된 파일 : ' + _analysis_file + '\n' + _analysis_file_url);
+            });
+        });
+    });
 });
 
+class ClientRequest{
 
-var res_to_kakao_server = function (_res, _msg){
+    constructor(_client_id, _request, _response){
+        this.client_id = _client_id;
+        this.request = _request;
+        this.response = _response;
 
-    const res_body = {
-        result : _msg
-    };
+        this.sheet_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.spreadsheet, SHEET_CREDENTIALS_PATH, SHEET_TOKEN_PATH);
+        this.drive_authenticator = new gl_api_auth.Authenticator(gl_api_auth.enum_SCOPES.drive, DRIVE_CREDENTIALS_PATH, DRIVE_TOKEN_PATH);
+    }
 
-    _res.status(200).send(res_body);   
+    get_req_parm_value(param_key){
+        return param_key in this.request.body.action.params ? this.request.body.action.params[param_key] : undefined;
+    }
+
+    is_req_valid(){
+
+        if(this.request.body == undefined || this.request.body.action == undefined || this.request.body.action.params == undefined){
+            return false;
+        }
+        return true;
+    }
+
+    update_template_file(_period_type, _tiker, __callback){
+
+        seeking_alpha.get_data_from_seeking_alpha(_tiker, _period_type, (_err, _income_state, _balance_sheet, _cash_flow, _period_type)=>{
+            if(_err){
+                console.error(_err);
+                __callback(_err);
+                return;
+            }
+
+            var stock_type = undefined;
+
+            if(seeking_alpha.find_data_type_in_dataset('Cost Of Revenues', _income_state)){
+                stock_type = gl_spreadsheet.enum_stock_types.NORMAL;
+            }else if(seeking_alpha.find_data_type_in_dataset('Rental Revenue', _income_state)){
+                stock_type = gl_spreadsheet.enum_stock_types.REITS;
+            }else if(seeking_alpha.find_data_type_in_dataset('Provision For Loan Losses', _income_state)){
+                stock_type = gl_spreadsheet.enum_stock_types.FINANCE;
+            }else{
+                console.error('invalid stock type');
+                __callback('invalid stock type');
+                return;
+            }
+    
+            this.sheet_authenticator.get_auth_obj((_err, _sheet_auth)=>{
+
+                if(_err){
+                    console.error(_err);
+                    __callback(_err);
+                    return;
+                }
+
+                var sheet_name = undefined;
+    
+                if(_period_type == seeking_alpha.enum_req_period_type.annual){
+                    sheet_name = 'summary-annual';
+                }else if(_period_type == seeking_alpha.enum_req_period_type.quarterly){
+                    sheet_name = 'summary-quarterly';
+                }else{
+                    console.error('invalid period type : ' + _period_type);
+                    __callback('invalid period type : ' + _period_type);
+                    return;
+                }
+    
+                gl_spreadsheet.setup_data_into_sheet(_sheet_auth, stock_type, sheet_name, _tiker, _income_state, _balance_sheet, _cash_flow, (_err)=>{
+                    if(_err){
+                        console.error('fail : setup data into sheet' + _err);
+                        __callback(_err);
+                        return;
+                    }
+    
+                    __callback(undefined, stock_type);
+                });
+            });
+        });
+    }
+
+    create_stock_analysis_file(tiker, template_file_name, __callback){
+
+        this.drive_authenticator.get_auth_obj(function(err, drive_auth){
+            
+            if(err){
+                console.error(err);
+                __callback(err);
+                return;
+            }
+    
+            //search template file
+            gl_drive.search_file(drive_auth, template_file_name, function(err, template_file_obj){
+                if(err){
+                    console.error(err);
+                    __callback(err);
+                    return;
+                }
+    
+                //copy template file
+                gl_drive.copy_file(drive_auth, template_file_obj, function(err, copied_file_obj){
+                    if(err){
+                        console.error(err);
+                        __callback(err);
+                        return;
+                    }
+    
+                    var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + tiker;
+    
+                    //rename copied template file
+                    gl_drive.rename_file(drive_auth, copied_file_obj, generated_file_name, function(err, renamed_file){
+    
+                        if(err){
+                            console.error(err);
+                            __callback(err);
+                            return;
+                        }
+    
+                        //search parent stock analysis folder
+                        gl_drive.search_file(drive_auth, PARENT_STOCK_ANALYSIS_FOLDER_NAME, function(err, parent_stock_folder_obj){
+    
+                            if(err){
+                                console.error(err);
+                                __callback(err);
+                                return;
+                            }
+    
+                            //get filelist in parent stock foler
+                            gl_drive.get_file_list_in_folder(drive_auth, parent_stock_folder_obj, function(err, file_obj_list){
+    
+                                if(err){
+                                    console.error(err);
+                                    __callback(err);
+                                    return;
+                                }
+    
+                                //remove duplicated file
+                                file_obj_list.forEach(file_obj => {
+                                    if(file_obj['name'] != generated_file_name) return;
+                                    gl_drive.delete_file(drive_auth, file_obj, ()=>{
+                                        console.log('... notice : remove old file : [' + generated_file_name + ']');
+                                    });
+                                });
+    
+                                //move into parent stock folder
+                                gl_drive.move_file(drive_auth, renamed_file, parent_stock_folder_obj, function(err, moved_file_obj){
+                                    if(err){
+                                        console.error(err);
+                                        __callback(err);
+                                        return;
+                                    }
+    
+                                    __callback(undefined, generated_file_name, moved_file_obj['webViewLink']);
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    res_to_client(_msg){
+
+        const res_body = {
+            result : _msg
+        };
+    
+        this.response.status(200).send(res_body);   
+    }
 }
