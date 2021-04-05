@@ -65,7 +65,7 @@ setInterval(function() {
     tiker = tiker.toUpperCase();
 
     client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + tiker + '] 이 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
-                             ' 잠시후 확인 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
+                             '잠시후 확인 바랍니다. 생성된 파일은 주기적으로 삭제될 수 있으니 자신의 Drive로 복사해 주시기 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
 
     client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{
 
