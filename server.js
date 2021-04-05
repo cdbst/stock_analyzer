@@ -47,20 +47,21 @@ setInterval(function() {
 
     var client_req = new ClientRequest(0, _req, _res);
 
-    // if(client_req.is_req_valid() == false){
-    //     console.error('client request has no stock tiker information');
-    //     client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
-    //     return;
-    // }
+    if(client_req.is_req_valid() == false){
+        console.error('client request has no stock tiker information');
+        client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
+        return;
+    }
 
-    // const tiker = client_req.get_req_parm_value('tiker');
-    const tiker = 'KO';
+    var tiker = client_req.get_req_parm_value('tiker');
 
     if(tiker == undefined){
         console.error('client request has no stock tiker information');
         client_req.res_to_client('올바르지 않은 클라이언트 요청입니다(티커 정보가 없음).');
         return;
     }
+
+    tiker = tiker.toUpperCase();
 
     client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{ 
 
