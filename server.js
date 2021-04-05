@@ -61,7 +61,7 @@ setInterval(function() {
         return;
     }
 
-    console.log('Client Rquest : ' + tiker);
+    console.log('Client Rquest : ' + tiker + '\n TypeOf :' + (typeof tiker));
 
     tiker = tiker.toUpperCase();
 
