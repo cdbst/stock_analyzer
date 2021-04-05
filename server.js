@@ -43,7 +43,7 @@ setInterval(function() {
  */
  api_router.post('/finance', function (_req, _res){
 
-    console.log(this._req);
+    console.log(this._req.body);
 
     var client_req = new ClientRequest(0, _req, _res);
 
