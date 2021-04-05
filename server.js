@@ -61,13 +61,9 @@ setInterval(function() {
         return;
     }
 
-    console.log('Client Rquest : ' + tiker + '\n TypeOf :' + (typeof tiker));
-
     tiker = tiker.toUpperCase();
 
-    console.log('Client Rquest : START!!');
-
-    client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{ 
+    client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{
 
         if(_err){
             client_req.res_to_client('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
