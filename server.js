@@ -33,6 +33,11 @@ app.listen(process.env.PORT || 8080, function () {
     console.log('run -> stock analyzer API server ' + (process.env.PORT || 8080));
 });
 
+setInterval(function() {
+    http.get("http://cdbst-stock-analyzer.herokuapp.com/");
+}, 300000); // every 5 minutes (300000) heartbeat..
+
+
 /**
  * @description 'rest api' -  'getthreqexp' : 타이틀 홀더 카드의 특정 레벨 달성을 위해 필요한 기존카드의 최소 경험치를 계산함.
  */
