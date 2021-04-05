@@ -59,7 +59,7 @@ setInterval(function() {
 
     if(tiker == undefined){
         console.error('client request has no stock tiker information');
-        client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
+        client_req.res_to_client('올바르지 않은 클라이언트 요청입니다(티커 정보가 없음).');
         return;
     }
 
@@ -114,7 +114,7 @@ class ClientRequest{
     }
 
     get_req_parm_value(param_key){
-        return param_key in this.request.body.action.params ? this.request.body.action.params[param_key] : undefined;
+        return this.request.body.action.params.hasOwnProperty(param_key) ? this.request.body.action.params[param_key] : undefined;
     }
 
     is_req_valid(){
