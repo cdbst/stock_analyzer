@@ -43,6 +43,8 @@ setInterval(function() {
  */
  api_router.post('/finance', function (_req, _res){
 
+    console.log(this._req);
+
     var client_req = new ClientRequest(0, _req, _res);
 
     if(client_req.is_req_valid() == false){
@@ -116,7 +118,6 @@ class ClientRequest{
     is_req_valid(){
 
         if(this.request.body == undefined || this.request.body.action == undefined || this.request.body.action.params == undefined){
-            console.log(this.request);
             return false;
         }
         return true;
