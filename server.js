@@ -24,8 +24,8 @@ const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME
 
 const PARENT_STOCK_ANALYSIS_FOLDER_NAME = 'US Stock Anaysis';
 
-app.use('/api', api_router);
 app.use(body_parser.json());
+app.use('/api', api_router);
 
 app.get('/', function (req, res) {
     res.send('test'); 
