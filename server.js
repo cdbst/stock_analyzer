@@ -64,6 +64,9 @@ setInterval(function() {
 
     tiker = tiker.toUpperCase();
 
+    client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + tiker + '] 가 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
+                             ' 잠시후 확인 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
+
     client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{
 
         if(_err){
@@ -71,9 +74,6 @@ setInterval(function() {
             return;
         }
 
-        client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + tiker + '] 가 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
-                                ' 잠시후 확인 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
-        
         client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, tiker, (_err, _stock_type)=>{ 
             
             if(_err){
