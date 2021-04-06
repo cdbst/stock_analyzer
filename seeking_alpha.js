@@ -1,5 +1,5 @@
-var root_cas = require('ssl-root-cas/latest').create();
-var https = require('https');
+var root_cas = require('ssl-root-cas').create();
+var https = require('follow-redirects').https;
 https.globalAgent.options.ca = root_cas;
 
 const zlib = require('zlib');
@@ -27,9 +27,10 @@ function get_financial_data(ticker, financial_data_type, period_type, timeout = 
             'accept' : '*/*',
             'accept-encoding': 'gzip, deflate, br',
             'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-            'referer': 'https://seekingalpha.com/symbol/KO/income-statement',
             'cache-control': 'no-cache',
-            'User-Agent': 'Mozilla/5.0'
+            'referer': 'https://seekingalpha.com/symbol/' + ticker.toLowerCase() + '/' + financial_data_type,
+            'User-Agent': 'Mozilla/5.0',
+            'pragma': 'no-cache',
         }
     };
 
@@ -39,9 +40,8 @@ function get_financial_data(ticker, financial_data_type, period_type, timeout = 
   
     var get_req = https.request(get_options, function(res) {
 
-
         if(res.statusCode != 200){
-            __callback('invalid server response' + ticker + ' ' + period_type, undefined);
+            __callback('invalid server response. status code :' + res.statusCode);
             return;
         }
 
