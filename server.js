@@ -76,14 +76,14 @@ setInterval(function() {
         client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + ticker + '] 이 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
                                 ' 잠시후 확인 바랍니다. 생성된 파일은 주기적으로 삭제될 수 있으니 자신의 Drive로 복사해 주시기 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
         
-        client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, ticker, (_err)=>{
+        client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, ticker, (_err, _annual_stock_type)=>{
 
             if(_err){
                 console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
                 return;
             }
     
-            client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, ticker, (_err, _stock_type)=>{ 
+            client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, ticker, (_err, _quarterly_stock_type)=>{ 
                 
                 if(_err){
                     console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
@@ -92,14 +92,15 @@ setInterval(function() {
                 
                 var template_file_name = undefined;
     
-                if(_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
+                if(_annual_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
                     template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-                }else if(_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
+                }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
                     template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-                }else if(_stock_type == gl_spreadsheet.enum_stock_types.REITS){
+                }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.REITS){
                     template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
                 }else{
                     console.error('invalid stock type : \n' + useage_string);
+                    return;
                 }
     
                 client_req.create_stock_analysis_file(ticker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
@@ -155,10 +156,14 @@ class ClientRequest{
                 stock_type = gl_spreadsheet.enum_stock_types.REITS;
             }else if(seeking_alpha.find_data_type_in_dataset('Provision For Loan Losses', _income_state)){
                 stock_type = gl_spreadsheet.enum_stock_types.FINANCE;
-            }else{
+            }
+
+            if(stock_type == undefined && _period_type == seeking_alpha.enum_req_period_type.annual){
                 console.error('invalid stock type');
                 __callback('invalid stock type');
                 return;
+            }else if(stock_type == undefined){
+                __callback(undefined, undefined);
             }
     
             this.sheet_authenticator.get_auth_obj((_err, _sheet_auth)=>{
