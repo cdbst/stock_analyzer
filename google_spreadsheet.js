@@ -127,6 +127,9 @@ const g_sheet_rows_map = {
     }
 };
 
+const sheet_cleanup_mutex = new Mutex();
+const sheet_update_mutex = new Mutex();
+
 const FINANCE_REFERENCE_URL = 'https://seekingalpha.com/symbol/';
 
 class SheetOperator {
@@ -136,8 +139,6 @@ class SheetOperator {
         this.sheet_name = _sheet_name;
         this.sheet_row_map = undefined;
         this.sheet_id = _stock_type;
-        this.sheet_cleanup_mutex = new Mutex();
-        this.sheet_update_mutex = new Mutex();
 
         if(_stock_type == enum_stock_types.NORMAL){
             this.sheet_row_map = g_sheet_rows_map.normal;
@@ -200,7 +201,7 @@ class SheetOperator {
             }
         };
 
-        this.sheet_cleanup_mutex.acquire()
+        sheet_cleanup_mutex.acquire()
         .then(function(release){
             sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
                 release();
@@ -261,7 +262,7 @@ class SheetOperator {
             }
         };
 
-        this.sheet_update_mutex.acquire()
+        sheet_update_mutex.acquire()
         .then(function(release){
             sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
                 release();
