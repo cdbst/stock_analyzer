@@ -295,7 +295,7 @@ function is_ticker_str_validate(ticker){
     var ticker_pettern = /[a-zA-Z.]+/;
     var pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
 
-    if(ticker_pettern.test(test) && pattern_spc.test(test) === false){
+    if(ticker_pettern.test(ticker) && pattern_spc.test(ticker) === false){
         return true;
     }
     return false;
