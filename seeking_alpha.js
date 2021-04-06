@@ -21,7 +21,7 @@ function get_financial_data(ticker, financial_data_type, period_type, timeout = 
     var get_options = {
         host: 'seekingalpha.com',
         port: '443',
-        path: '/symbol/' + ticker + '/financials-data?period_type='+ period_type +'&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
+        path: '/symbol/' + ticker.toLowerCase() + '/financials-data?period_type='+ period_type +'&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
         method: 'GET',
         headers: {
             'accept' : '*/*',
@@ -39,8 +39,9 @@ function get_financial_data(ticker, financial_data_type, period_type, timeout = 
   
     var get_req = https.request(get_options, function(res) {
 
+
         if(res.statusCode != 200){
-            __callback('invalid server response', undefined);
+            __callback('invalid server response' + ticker + ' ' + period_type, undefined);
             return;
         }
 
