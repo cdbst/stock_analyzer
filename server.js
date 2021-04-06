@@ -42,9 +42,6 @@ setInterval(function() {
 }, 300000); // every 5 minutes (300000) heartbeat..
 
 
-/**
- * @description 'rest api' -  'getthreqexp' : 타이틀 홀더 카드의 특정 레벨 달성을 위해 필요한 기존카드의 최소 경험치를 계산함.
- */
  api_router.post('/finance', function (_req, _res){
 
     var client_req = new ClientRequest(0, _req, _res);
@@ -69,7 +66,6 @@ setInterval(function() {
     }
 
     ticker = ticker.toUpperCase();
-
 
     seeking_alpha.is_valid_ticker(ticker, (_err)=>{
         if(_err){

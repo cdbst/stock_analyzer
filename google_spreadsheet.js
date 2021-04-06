@@ -1,4 +1,5 @@
 const { google } = require('googleapis');
+const Mutex = require('async-mutex').Mutex;
 
 const enum_stock_types = {
     NORMAL : '1JRkKLvUePsNEzSe2yW7Fz4BrXxmyCivdzXQI0L0QylE',
@@ -135,6 +136,8 @@ class SheetOperator {
         this.sheet_name = _sheet_name;
         this.sheet_row_map = undefined;
         this.sheet_id = _stock_type;
+        this.sheet_cleanup_mutex = new Mutex();
+        this.sheet_update_mutex = new Mutex();
 
         if(_stock_type == enum_stock_types.NORMAL){
             this.sheet_row_map = g_sheet_rows_map.normal;
@@ -186,7 +189,6 @@ class SheetOperator {
     cleanup_sheet(__callback){
 
         const auth = this.auth;
-
         var sheets = google.sheets({ version: 'v4', auth });
 
         var resources = {
@@ -197,13 +199,17 @@ class SheetOperator {
                 data: this.build_sheet_cleanup_data()
             }
         };
-    
-        sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
-            if(err){
-                __callback(err);
-                return;
-            }
-            __callback(undefined, result);
+
+        this.sheet_cleanup_mutex.acquire()
+        .then(function(release){
+            sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
+                release();
+                if(err){
+                    __callback(err);
+                    return;
+                }
+                __callback(undefined, result);
+            });
         });
     }
 
@@ -254,13 +260,17 @@ class SheetOperator {
                 data: this.build_sheet_data(ticker, income_state_datas, balance_sheet_datas, cash_flow_datas) // TODO: FIX;
             }
         };
-    
-        sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
-            if(err){
-                __callback(err);
-                return;
-            }
-            __callback(undefined, result);
+
+        this.sheet_update_mutex.acquire()
+        .then(function(release){
+            sheets.spreadsheets.values.batchUpdate(resources, (err, result)=>{
+                release();
+                if(err){
+                    __callback(err);
+                    return;
+                }
+                __callback(undefined, result);
+            });
         });
     }
 
