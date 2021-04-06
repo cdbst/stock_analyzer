@@ -21,16 +21,15 @@ function get_financial_data(ticker, financial_data_type, period_type, timeout = 
     var get_options = {
         host: 'seekingalpha.com',
         port: '443',
-        path: '/symbol/' + ticker.toLowerCase() + '/financials-data?period_type='+ period_type +'&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
+        path: '/symbol/' + ticker + '/financials-data?period_type='+ period_type +'&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
         method: 'GET',
         headers: {
             'accept' : '*/*',
             'accept-encoding': 'gzip, deflate, br',
             'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
             'cache-control': 'no-cache',
-            'referer': 'https://seekingalpha.com/symbol/' + ticker.toLowerCase() + '/' + financial_data_type,
+            'referer': 'https://seekingalpha.com/symbol/' + ticker + '/' + financial_data_type,
             'User-Agent': 'Mozilla/5.0',
-            'pragma': 'no-cache',
         }
     };
 
