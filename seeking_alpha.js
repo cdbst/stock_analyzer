@@ -134,7 +134,7 @@ function get_data_from_seeking_alpha(ticker, period_type, __callback){
 
 function is_valid_ticker(_ticker, __callback){
 
-    get_financial_data(_ticker, enum_financial_data_type.income_statement, enum_req_period_type.annual, 4000, (_err, _income_state)=>{
+    get_financial_data(_ticker, enum_financial_data_type.income_statement, enum_req_period_type.annual, 3000, (_err, _income_state)=>{
         if(_err){
             console.log(_err);
             __callback(_err);
