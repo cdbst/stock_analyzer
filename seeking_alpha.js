@@ -67,7 +67,7 @@ var get_financial_data = function(tiker, financial_data_type, period_type, __cal
     return;
 }
 
-function find_data_type_in_dataset(data_type, date_set){
+function find_data_type_in_dataset(data_types, date_set){
 
     var super_set = date_set.data;
 
@@ -80,7 +80,7 @@ function find_data_type_in_dataset(data_type, date_set){
             for(var k = 0; k < rows.length; k++){
                 var row = rows[k];
 
-                if(row.value == data_type){
+                if(data_types.includes(row.value)){
                     return true;
                 }
             }
@@ -127,8 +127,31 @@ function get_data_from_seeking_alpha(tiker, period_type, __callback){
     });
 }
 
+function is_valid_tiker(_tiker, __callback){
+
+    get_financial_data(_tiker, enum_financial_data_type.income_statement, enum_req_period_type.annual, (_err, _income_state)=>{
+        if(_err){
+            console.log(_err);
+            __callback(_err);
+            return;
+        }
+
+        var income_state = JSON.parse(_income_state);
+
+
+        if(find_data_type_in_dataset(['Cost Of Revenues', 'Rental Revenue', 'Provision For Loan Losses'], income_state) == false){
+            console.error('invalid stock type');
+            __callback('invalid stock type');
+            return;
+        }
+
+        __callback(undefined);
+    });
+}
+
 module.exports.get_financial_data = get_financial_data;
 module.exports.find_data_type_in_dataset = find_data_type_in_dataset;
 module.exports.get_data_from_seeking_alpha = get_data_from_seeking_alpha;
+module.exports.is_valid_tiker = is_valid_tiker;
 module.exports.enum_financial_data_type = enum_financial_data_type;
 module.exports.enum_req_period_type = enum_req_period_type;

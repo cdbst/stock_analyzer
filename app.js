@@ -180,7 +180,7 @@ function get_data_from_seeking_alpha(period_type, __callback){
                     validate_sample_data_type = 'Provision For Loan Losses';
                 }
 
-                if(seeking_alpha.find_data_type_in_dataset(validate_sample_data_type, income_state) == false){
+                if(seeking_alpha.find_data_type_in_dataset([validate_sample_data_type], income_state) == false){
                     console.error('invalid data format : expected type is : ' + param.stock_type);
                     process.exit(1);
                 };

@@ -7,6 +7,16 @@
         {
             "type": "pwa-node",
             "request": "launch",
+            "name": "Launch - Server",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "args": [],
+            "program": "${workspaceFolder}\\server.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
             "name": "Launch - Set mode (normal)",
             "skipFiles": [
                 "<node_internals>/**"

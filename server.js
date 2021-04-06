@@ -65,45 +65,56 @@ setInterval(function() {
 
     tiker = tiker.toUpperCase();
 
-    client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + tiker + '] 이 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
-                             ' 잠시후 확인 바랍니다. 생성된 파일은 주기적으로 삭제될 수 있으니 자신의 Drive로 복사해 주시기 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
-
-    client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{
-
+    seeking_alpha.is_valid_tiker(tiker, (_err)=>{
         if(_err){
-            console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
+            client_req.res_to_client('요청하신 티커 [' + tiker + '] 로는 올바른 재무제표 정보를 얻어올 수 없습니다.');
             return;
         }
+        
+        client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + tiker + '] 이 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
+                                ' 잠시후 확인 바랍니다. 생성된 파일은 주기적으로 삭제될 수 있으니 자신의 Drive로 복사해 주시기 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
+        
+        client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{
 
-        client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, tiker, (_err, _stock_type)=>{ 
-            
             if(_err){
                 console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
                 return;
             }
-            
-            var template_file_name = undefined;
-
-            if(_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
-                template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-            }else if(_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
-                template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-            }else if(_stock_type == gl_spreadsheet.enum_stock_types.REITS){
-                template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-            }else{
-                console.error('invalid stock type : \n' + useage_string);
-            }
-
-            client_req.create_stock_analysis_file(tiker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
+    
+            client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, tiker, (_err, _stock_type)=>{ 
+                
                 if(_err){
-                    console.error('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
+                    console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
                     return;
                 }
-
-                console.log('생성된 파일 : ' + _analysis_file + '\n' + _analysis_file_url);
+                
+                var template_file_name = undefined;
+    
+                if(_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
+                    template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                }else if(_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
+                    template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                }else if(_stock_type == gl_spreadsheet.enum_stock_types.REITS){
+                    template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                }else{
+                    console.error('invalid stock type : \n' + useage_string);
+                }
+    
+                client_req.create_stock_analysis_file(tiker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
+                    if(_err){
+                        console.error('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
+                        return;
+                    }
+    
+                    console.log('생성된 파일 : ' + _analysis_file + '\n' + _analysis_file_url);
+                });
             });
         });
     });
+
+    
+
+    
 });
 
 class ClientRequest{
