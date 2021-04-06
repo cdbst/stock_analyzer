@@ -327,7 +327,7 @@ function cleanup_sheet(_stock_type, _sheet_name, _client_req, __callback){
             return;
         }
 
-        var sheet_operator = new gl_spreadsheet.SheetOperator(_annual_stock_type, 'summary-quarterly', _sheet_auth);
+        var sheet_operator = new gl_spreadsheet.SheetOperator(_stock_type, _sheet_name, _sheet_auth);
         sheet_operator.cleanup_sheet((_err)=>{
             if(_err){
                 console.error(_err);
