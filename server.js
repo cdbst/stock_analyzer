@@ -164,6 +164,7 @@ class ClientRequest{
                 return;
             }else if(stock_type == undefined){
                 __callback(undefined, undefined);
+                return;
             }
     
             this.sheet_authenticator.get_auth_obj((_err, _sheet_auth)=>{
