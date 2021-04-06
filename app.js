@@ -144,7 +144,7 @@ if(run_mode == 0){
 
 function get_data_from_seeking_alpha(period_type, __callback){
 
-    seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.income_statement, period_type, function(err, income_state_data){
+    seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.income_statement, period_type, undefined, function(err, income_state_data){
 
         if(err){
             console.error(err);
@@ -153,7 +153,7 @@ function get_data_from_seeking_alpha(period_type, __callback){
         
         var income_state = JSON.parse(income_state_data);
     
-        seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.balance_sheet, period_type, function(err, balance_sheet_data){
+        seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.balance_sheet, period_type, undefined, function(err, balance_sheet_data){
             if(err){
                 console.error(err);
                 process.exit(1);
@@ -161,7 +161,7 @@ function get_data_from_seeking_alpha(period_type, __callback){
 
             var balance_sheet = JSON.parse(balance_sheet_data);
     
-            seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.cash_flow_statement, period_type, function(err, cash_flow_data){
+            seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.cash_flow_statement, period_type, undefined, function(err, cash_flow_data){
     
                 if(err){
                     console.error(err);
