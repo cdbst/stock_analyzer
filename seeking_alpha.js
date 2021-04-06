@@ -15,13 +15,13 @@ const enum_req_period_type = {
     quarterly : 'quarterly'
 }
 
-function get_financial_data(tiker, financial_data_type, period_type, timeout = undefined, __callback){
+function get_financial_data(ticker, financial_data_type, period_type, timeout = undefined, __callback){
 
     // url example : https://seekingalpha.com/symbol/KO/financials-data?period_type=annual&statement_type=cash-flow-statement&order_type=latest_right&is_pro=false
     var get_options = {
         host: 'seekingalpha.com',
         port: '443',
-        path: '/symbol/' + tiker + '/financials-data?period_type='+ period_type +'&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
+        path: '/symbol/' + ticker + '/financials-data?period_type='+ period_type +'&statement_type=' + financial_data_type + '&order_type=latest_right&is_pro=false',
         method: 'GET',
         headers: {
             'accept' : '*/*',
@@ -94,9 +94,9 @@ function find_data_type_in_dataset(data_types, date_set){
     return false; // test code
 }
 
-function get_data_from_seeking_alpha(tiker, period_type, __callback){
+function get_data_from_seeking_alpha(ticker, period_type, __callback){
 
-    get_financial_data(tiker, enum_financial_data_type.income_statement, period_type, undefined, function(err, income_state_data){
+    get_financial_data(ticker, enum_financial_data_type.income_statement, period_type, undefined, function(err, income_state_data){
 
         if(err){
             console.error('fail : get financial data from seeking alpah');
@@ -106,7 +106,7 @@ function get_data_from_seeking_alpha(tiker, period_type, __callback){
         
         var income_state = JSON.parse(income_state_data);
     
-        get_financial_data(tiker, enum_financial_data_type.balance_sheet, period_type, undefined, function(err, balance_sheet_data){
+        get_financial_data(ticker, enum_financial_data_type.balance_sheet, period_type, undefined, function(err, balance_sheet_data){
             if(err){
                 console.error('fail : get financial data from seeking alpah');
                 __callback(err);
@@ -115,7 +115,7 @@ function get_data_from_seeking_alpha(tiker, period_type, __callback){
 
             var balance_sheet = JSON.parse(balance_sheet_data);
     
-            get_financial_data(tiker, enum_financial_data_type.cash_flow_statement, period_type, undefined, function(err, cash_flow_data){
+            get_financial_data(ticker, enum_financial_data_type.cash_flow_statement, period_type, undefined, function(err, cash_flow_data){
     
                 if(err){
                     console.error('fail : get financial data from seeking alpah');
@@ -131,9 +131,9 @@ function get_data_from_seeking_alpha(tiker, period_type, __callback){
     });
 }
 
-function is_valid_tiker(_tiker, __callback){
+function is_valid_ticker(_ticker, __callback){
 
-    get_financial_data(_tiker, enum_financial_data_type.income_statement, enum_req_period_type.annual, 3000, (_err, _income_state)=>{
+    get_financial_data(_ticker, enum_financial_data_type.income_statement, enum_req_period_type.annual, 3000, (_err, _income_state)=>{
         if(_err){
             console.log(_err);
             __callback(_err);
@@ -156,6 +156,6 @@ function is_valid_tiker(_tiker, __callback){
 module.exports.get_financial_data = get_financial_data;
 module.exports.find_data_type_in_dataset = find_data_type_in_dataset;
 module.exports.get_data_from_seeking_alpha = get_data_from_seeking_alpha;
-module.exports.is_valid_tiker = is_valid_tiker;
+module.exports.is_valid_ticker = is_valid_ticker;
 module.exports.enum_financial_data_type = enum_financial_data_type;
 module.exports.enum_req_period_type = enum_req_period_type;

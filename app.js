@@ -25,8 +25,8 @@ var param = {}
 param.mode = args[0];
 
 const useage_string =   'invalid argument :\n usage : node app.js {mode} - [mode : set, cleanup]\n' +
-                        '   set mode useage : {tiker} {sheet_type}\n' +
-                        '       {tiker} - [stock_type]\n' + 
+                        '   set mode useage : {ticker} {sheet_type}\n' +
+                        '       {ticker} - [stock_type]\n' + 
                         '       {sheet_type} - [finance(f), normal(n), reits(r)]\n' +
                         '   cleanup mode useage : cleanup {sheet_type}\n' +
                         '       {sheet_type} - [finance(f), normal(n), reits(r)]';
@@ -49,7 +49,7 @@ if(args[0] == 'cleanup' && args.length != 2){
 var run_mode = args[0] == 'set' ? 0 : 1; // 0 is default mode. 1 is cleanup mode
 
 if(run_mode == 0){ //set mode
-    param.tiker = args[1].toUpperCase();
+    param.ticker = args[1].toUpperCase();
     param.stock_type = args[2];
 }else{ // cleanup mode
     param.stock_type = args[1];
@@ -144,7 +144,7 @@ if(run_mode == 0){
 
 function get_data_from_seeking_alpha(period_type, __callback){
 
-    seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.income_statement, period_type, undefined, function(err, income_state_data){
+    seeking_alpha.get_financial_data(param.ticker, seeking_alpha.enum_financial_data_type.income_statement, period_type, undefined, function(err, income_state_data){
 
         if(err){
             console.error(err);
@@ -153,7 +153,7 @@ function get_data_from_seeking_alpha(period_type, __callback){
         
         var income_state = JSON.parse(income_state_data);
     
-        seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.balance_sheet, period_type, undefined, function(err, balance_sheet_data){
+        seeking_alpha.get_financial_data(param.ticker, seeking_alpha.enum_financial_data_type.balance_sheet, period_type, undefined, function(err, balance_sheet_data){
             if(err){
                 console.error(err);
                 process.exit(1);
@@ -161,7 +161,7 @@ function get_data_from_seeking_alpha(period_type, __callback){
 
             var balance_sheet = JSON.parse(balance_sheet_data);
     
-            seeking_alpha.get_financial_data(param.tiker, seeking_alpha.enum_financial_data_type.cash_flow_statement, period_type, undefined, function(err, cash_flow_data){
+            seeking_alpha.get_financial_data(param.ticker, seeking_alpha.enum_financial_data_type.cash_flow_statement, period_type, undefined, function(err, cash_flow_data){
     
                 if(err){
                     console.error(err);
@@ -224,7 +224,7 @@ function setup_data_into_sheet(period_type, income_state_data, balance_sheet_dat
 
             console.log('... cleaning up sheet is success');
 
-            sheet_operator.update_sheet(param.tiker, income_state_data, balance_sheet_data, cashflow_data, (err)=>{
+            sheet_operator.update_sheet(param.ticker, income_state_data, balance_sheet_data, cashflow_data, (err)=>{
 
                 if(err){
                     console.error('fail : updating sheet\n' + err);
@@ -268,7 +268,7 @@ function create_stock_analysis_file(__callback){
 
                 console.log('... success : copy template file success');
 
-                var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + param.tiker;
+                var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + param.ticker;
 
                 //rename copied template file
                 gl_drive.rename_file(drive_auth, copied_file_obj, generated_file_name, function(err, renamed_file){

@@ -50,38 +50,44 @@ setInterval(function() {
     var client_req = new ClientRequest(0, _req, _res);
 
     if(client_req.is_req_valid() == false){
-        console.error('client request has no stock tiker information');
+        console.error('client request has no stock ticker information');
         client_req.res_to_client('올바르지 않은 클라이언트 요청입니다.');
         return;
     }
 
-    var tiker = client_req.get_req_parm_value('tiker');
+    var ticker = client_req.get_req_parm_value('ticker');
 
-    if(tiker == undefined){
-        console.error('client request has no stock tiker information');
+    if(ticker == undefined){
+        console.error('client request has no stock ticker information');
         client_req.res_to_client('올바르지 않은 클라이언트 요청입니다(티커 정보가 없음).');
         return;
     }
 
-    tiker = tiker.toUpperCase();
+    if(is_ticker_str_validate(ticker) == false){
+        client_req.res_to_client('올바르지 티커 포멧입니다.');
+        return;
+    }
 
-    seeking_alpha.is_valid_tiker(tiker, (_err)=>{
+    ticker = ticker.toUpperCase();
+
+
+    seeking_alpha.is_valid_ticker(ticker, (_err)=>{
         if(_err){
-            client_req.res_to_client('요청하신 티커 [' + tiker + '] 로는 올바른 재무제표 정보를 얻어올 수 없습니다.');
+            client_req.res_to_client('요청하신 티커 [' + ticker + '] 로는 올바른 재무제표 정보를 얻어올 수 없습니다.');
             return;
         }
         
-        client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + tiker + '] 이 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
+        client_req.res_to_client('요청하신 파일 [' + PARENT_STOCK_ANALYSIS_FOLDER_NAME  + ' - ' + ticker + '] 이 아래 링크의 폴더에 생성되기 까지 약 5~10초 정도 소요됩니다.' +
                                 ' 잠시후 확인 바랍니다. 생성된 파일은 주기적으로 삭제될 수 있으니 자신의 Drive로 복사해 주시기 바랍니다. : \n' + PARENT_STOCK_ANALYSIS_FOLDER_URL);
         
-        client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, tiker, (_err)=>{
+        client_req.update_template_file(seeking_alpha.enum_req_period_type.annual, ticker, (_err)=>{
 
             if(_err){
                 console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
                 return;
             }
     
-            client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, tiker, (_err, _stock_type)=>{ 
+            client_req.update_template_file(seeking_alpha.enum_req_period_type.quarterly, ticker, (_err, _stock_type)=>{ 
                 
                 if(_err){
                     console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
@@ -100,7 +106,7 @@ setInterval(function() {
                     console.error('invalid stock type : \n' + useage_string);
                 }
     
-                client_req.create_stock_analysis_file(tiker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
+                client_req.create_stock_analysis_file(ticker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
                     if(_err){
                         console.error('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
                         return;
@@ -111,10 +117,6 @@ setInterval(function() {
             });
         });
     });
-
-    
-
-    
 });
 
 class ClientRequest{
@@ -140,9 +142,9 @@ class ClientRequest{
         return true;
     }
 
-    update_template_file(_period_type, _tiker, __callback){
+    update_template_file(_period_type, _ticker, __callback){
 
-        seeking_alpha.get_data_from_seeking_alpha(_tiker, _period_type, (_err, _income_state, _balance_sheet, _cash_flow, _period_type)=>{
+        seeking_alpha.get_data_from_seeking_alpha(_ticker, _period_type, (_err, _income_state, _balance_sheet, _cash_flow, _period_type)=>{
             if(_err){
                 console.error(_err);
                 __callback(_err);
@@ -183,7 +185,7 @@ class ClientRequest{
                     return;
                 }
     
-                gl_spreadsheet.setup_data_into_sheet(_sheet_auth, stock_type, sheet_name, _tiker, _income_state, _balance_sheet, _cash_flow, (_err)=>{
+                gl_spreadsheet.setup_data_into_sheet(_sheet_auth, stock_type, sheet_name, _ticker, _income_state, _balance_sheet, _cash_flow, (_err)=>{
                     if(_err){
                         console.error('fail : setup data into sheet' + _err);
                         __callback(_err);
@@ -196,7 +198,7 @@ class ClientRequest{
         });
     }
 
-    create_stock_analysis_file(tiker, template_file_name, __callback){
+    create_stock_analysis_file(ticker, template_file_name, __callback){
 
         this.drive_authenticator.get_auth_obj(function(err, drive_auth){
             
@@ -222,7 +224,7 @@ class ClientRequest{
                         return;
                     }
     
-                    var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + tiker;
+                    var generated_file_name = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - ' + ticker;
     
                     //rename copied template file
                     gl_drive.rename_file(drive_auth, copied_file_obj, generated_file_name, function(err, renamed_file){
@@ -285,4 +287,16 @@ class ClientRequest{
     
         this.response.status(200).send(res_body);   
     }
+}
+
+
+function is_ticker_str_validate(ticker){
+
+    var ticker_pettern = /[a-zA-Z.]+/;
+    var pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
+
+    if(ticker_pettern.test(test) && pattern_spc.test(test) === false){
+        return true;
+    }
+    return false;
 }

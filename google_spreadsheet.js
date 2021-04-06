@@ -9,7 +9,7 @@ const enum_stock_types = {
 const g_sheet_rows_map = {
     common : {
         url :'!A1', // URL
-        tiker :'!A3', // 티커
+        ticker :'!A3', // 티커
         accounting_base_date : '!B9:G9', // 회계기준일자
     },
     normal : {
@@ -240,7 +240,7 @@ class SheetOperator {
         return cleanup_data;
     }
 
-    update_sheet(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas, __callback){
+    update_sheet(ticker, income_state_datas, balance_sheet_datas, cash_flow_datas, __callback){
 
         const auth = this.auth;
 
@@ -251,7 +251,7 @@ class SheetOperator {
             spreadsheetId: this.sheet_id,
             resource:{
                 valueInputOption: "RAW",
-                data: this.build_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas) // TODO: FIX;
+                data: this.build_sheet_data(ticker, income_state_datas, balance_sheet_datas, cash_flow_datas) // TODO: FIX;
             }
         };
     
@@ -264,7 +264,7 @@ class SheetOperator {
         });
     }
 
-    build_sheet_data(tiker, income_state_datas, balance_sheet_datas, cash_flow_datas){
+    build_sheet_data(ticker, income_state_datas, balance_sheet_datas, cash_flow_datas){
 
         var update_datas = [];
 
@@ -278,11 +278,11 @@ class SheetOperator {
         update_datas.push(
             {
                 range: this.sheet_name + g_sheet_rows_map.common.url, //TODO: URL
-                values: [[FINANCE_REFERENCE_URL + tiker]]
+                values: [[FINANCE_REFERENCE_URL + ticker]]
             },
             {
-                range: this.sheet_name + g_sheet_rows_map.common.tiker, //TODO: TIKER
-                values: [[tiker]]
+                range: this.sheet_name + g_sheet_rows_map.common.ticker, //TODO: ticker
+                values: [[ticker]]
             },
             {
                 range: this.sheet_name + g_sheet_rows_map.common.accounting_base_date, //TODO: 회계기준일자
@@ -424,7 +424,7 @@ class SheetOperator {
     }
 }
 
-function setup_data_into_sheet(_sheet_auth, _stock_type, _sheet_name, _tiker, _income_state_data, _balance_sheet_data, _cashflow_data, __callback){
+function setup_data_into_sheet(_sheet_auth, _stock_type, _sheet_name, _ticker, _income_state_data, _balance_sheet_data, _cashflow_data, __callback){
 
     //Sheet operator for annually data.
     sheet_operator = new SheetOperator(_stock_type, _sheet_name, _sheet_auth);
@@ -436,7 +436,7 @@ function setup_data_into_sheet(_sheet_auth, _stock_type, _sheet_name, _tiker, _i
             return;
         }
 
-        sheet_operator.update_sheet(_tiker, _income_state_data, _balance_sheet_data, _cashflow_data, (err)=>{
+        sheet_operator.update_sheet(_ticker, _income_state_data, _balance_sheet_data, _cashflow_data, (err)=>{
 
             if(err){
                 console.error('fail : updating sheet\n' + err);
@@ -458,7 +458,7 @@ module.exports.setup_data_into_sheet = setup_data_into_sheet;
     // data:[
     //     {
     //         range: g.sheet_name + "!A3", // Update single cell
-    //         values: [[tiker]]
+    //         values: [[ticker]]
     //     }, 
     //     // {
     //     //     range: "Sheet1!B4:B6", // Update a column
