@@ -64,7 +64,7 @@ setInterval(function() {
     }
 
     if(is_ticker_str_validate(ticker) == false){
-        client_req.res_to_client('올바르지 티커 포멧입니다.');
+        client_req.res_to_client('올바르지 않은 티커 포멧입니다.');
         return;
     }
 
