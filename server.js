@@ -89,28 +89,43 @@ setInterval(function() {
                     console.error('주식 분석 파일이 업데이트 과정에서 실패했습니다.');
                     return;
                 }
-                
-                var template_file_name = undefined;
+
+                var create_stock_analysis_file = function(){
+
+                    var template_file_name = undefined;
     
-                if(_annual_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
-                    template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-                }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
-                    template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-                }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.REITS){
-                    template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
-                }else{
-                    console.error('invalid stock type : \n' + useage_string);
-                    return;
-                }
-    
-                client_req.create_stock_analysis_file(ticker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
-                    if(_err){
-                        console.error('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
+                    if(_annual_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
+                        template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                    }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
+                        template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                    }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.REITS){
+                        template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                    }else{
+                        console.error('invalid stock type : \n' + useage_string);
                         return;
                     }
-    
-                    console.log('생성된 파일 : ' + _analysis_file + '\n' + _analysis_file_url);
-                });
+        
+                    client_req.create_stock_analysis_file(ticker, template_file_name, (_err, _analysis_file, _analysis_file_url)=>{
+                        if(_err){
+                            console.error('주식 분석 파일을 생성하는 과정에서 실패했습니다.');
+                            return;
+                        }
+        
+                        console.log('생성된 파일 : ' + _analysis_file + '\n' + _analysis_file_url);
+                    });
+                }
+
+                if(_quarterly_stock_type == undefined){ // annual data는 있고 quarterly data는 없는 경우. cleanup 처리만 한다.
+                    cleanup_sheet(_annual_stock_type, 'summary-quarterly', client_req, (_err)=>{
+                        if(_err){
+                            console.error('주식 분석 파일을 초기화 하는 과정에서 실패했습니다.');
+                            return;
+                        }
+                        create_stock_analysis_file();
+                    });
+                }else{
+                    create_stock_analysis_file();
+                }
             });
         });
     });
@@ -162,7 +177,7 @@ class ClientRequest{
                 console.error('invalid stock type');
                 __callback('invalid stock type');
                 return;
-            }else if(stock_type == undefined){
+            }else if(stock_type == undefined && _period_type == seeking_alpha.enum_req_period_type.quarterly){
                 __callback(undefined, undefined);
                 return;
             }
@@ -301,4 +316,27 @@ function is_ticker_str_validate(ticker){
         return true;
     }
     return false;
+}
+
+function cleanup_sheet(_stock_type, _sheet_name, _client_req, __callback){
+
+    _client_req.sheet_authenticator.get_auth_obj((_err, _sheet_auth)=>{
+        if(_err){
+            console.error(_err);
+            __callback(_err);
+            return;
+        }
+
+        var sheet_operator = new gl_spreadsheet.SheetOperator(_annual_stock_type, 'summary-quarterly', _sheet_auth);
+        sheet_operator.cleanup_sheet((_err)=>{
+            if(_err){
+                console.error(_err);
+                __callback(_err);
+                return;
+            }
+            __callback(undefined);
+        })
+    })
+
+    
 }
