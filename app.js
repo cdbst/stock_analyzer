@@ -173,14 +173,14 @@ function get_data_from_seeking_alpha(period_type, __callback){
                 var validate_sample_data_type = undefined;
 
                 if(g.req_sheet_type == gl_spreadsheet.enum_stock_types.REITS){
-                    validate_sample_data_type = 'Rental Revenue';
+                    validate_sample_data_type = ['Rental Revenue'];
                 }else if(g.req_sheet_type == gl_spreadsheet.enum_stock_types.NORMAL){
-                    validate_sample_data_type = 'Cost Of Revenues';
+                    validate_sample_data_type = ['Cost Of Revenues', 'Other Revenues'];
                 }else if(g.req_sheet_type == gl_spreadsheet.enum_stock_types.FINANCE){
-                    validate_sample_data_type = 'Provision For Loan Losses';
+                    validate_sample_data_type = ['Provision For Loan Losses'];
                 }
 
-                if(seeking_alpha.find_data_type_in_dataset([validate_sample_data_type], income_state) == false){
+                if(seeking_alpha.find_data_type_in_dataset(validate_sample_data_type, income_state) == false){
                     console.error('invalid data format : expected type is : ' + param.stock_type);
                     process.exit(1);
                 };

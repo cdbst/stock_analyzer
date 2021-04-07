@@ -21,7 +21,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "args": ["set", "TGT", "normal"],
+            "args": ["set", "UNH", "normal"],
             "program": "${workspaceFolder}\\app.js"
         },
         {

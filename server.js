@@ -171,6 +171,8 @@ class ClientRequest{
                 stock_type = gl_spreadsheet.enum_stock_types.REITS;
             }else if(seeking_alpha.find_data_type_in_dataset('Provision For Loan Losses', _income_state)){
                 stock_type = gl_spreadsheet.enum_stock_types.FINANCE;
+            }else{ // default value is normal
+                stock_type = gl_spreadsheet.enum_stock_types.NORMAL;
             }
 
             if(stock_type == undefined && _period_type == seeking_alpha.enum_req_period_type.annual){
