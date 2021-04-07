@@ -68,6 +68,7 @@ class Authenticator {
 
             if (err)
                 return console.error('Error while trying to retrieve access token', err);
+
             o_auth2_client.setCredentials(token);
 
             // Store the token to disk for later program executions
