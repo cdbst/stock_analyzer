@@ -143,7 +143,7 @@ function is_valid_ticker(_ticker, __callback){
         var income_state = JSON.parse(_income_state);
 
 
-        if(find_data_type_in_dataset(['Cost Of Revenues', 'Rental Revenue', 'Provision For Loan Losses', 'Other Revenues'], income_state) == false){
+        if(find_data_type_in_dataset(['Cost Of Revenues', 'Rental Revenue', 'Provision For Loan Losses', 'Other Revenues', 'Revenues'], income_state) == false){
             console.error('invalid stock type');
             __callback('invalid stock type');
             return;
