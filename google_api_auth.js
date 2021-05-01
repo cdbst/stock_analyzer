@@ -33,7 +33,7 @@ class Authenticator {
 
     authorize(credentials, __callback) {
 
-        var { client_secret, client_id, redirect_uris } = credentials.web;
+        var { client_secret, client_id, redirect_uris } = credentials.installed;
 
         const o_auth2_client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 
