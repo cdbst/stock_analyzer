@@ -39,7 +39,7 @@ const g_sheet_rows_map = {
             '!B37:G37' : 'Capital Expenditure', // CAPEX
             '!B38:G38' : 'Levered Free Cash Flow', // Levered FCF
             '!B39:G39' : 'Free Cash Flow / Share', // FCF / share
-            '!B41:G41' : 'Common & Preferred Stock Dividends Paid', // 배당 지출
+            '!B41:G41' : 'Common & Preferred Stock Dividends Paid//Common & Preferred Stock Div. Paid', // 배당 지출
             '!B43:G43' : 'Repurchase of Common Stock', // 보통주 매입
             '!B44:G44' : 'Issuance of Common Stock', // 보통주발행 수익
             '!B46:G45' : 'Repurchase of Preferred Stock', // 우선주 매입
@@ -80,7 +80,7 @@ const g_sheet_rows_map = {
         cashflow_segment : {
             '!B45:G45' : 'Cash from Operations', // 영업활동 현금흐름
             '!B47:G47' : 'Acquisition of Real Estate Assets', // CAPEX
-            '!B48:G48' : 'Common & Preferred Stock Dividends Paid', // 배당지출
+            '!B48:G48' : 'Common & Preferred Stock Dividends Paid//Common & Preferred Stock Div. Paid', // 배당지출
             '!B50:G50' : 'Issuance of Common Stock', // 보통주 발행 수익
             '!B51:G51' : 'Repurchase of Common Stock', // 보통주 매입
             '!B52:G52' : 'Issuance of Preferred Stock', // 우선주 발행 수익
@@ -118,7 +118,7 @@ const g_sheet_rows_map = {
             '!B42:G42' : 'Cash from Investing', // 투자활동 현금흐름
             '!B44:G44' : 'Cash from Financing', // 재무활동 현금흐름
             '!B46:G46' : 'Free Cash Flow / Share', // FCF/Share
-            '!B48:G48' : 'Common & Preferred Stock Dividends Paid', // 배당지출
+            '!B48:G48' : 'Common & Preferred Stock Dividends Paid//Common & Preferred Stock Div. Paid', // 배당지출
             '!B50:G50' : 'Repurchase of Common Stock', // 보통주매입
             '!B51:G51' : 'Repurchase of Preferred Stock', // 우선주매입
             '!B52:G52' : 'Issuance of Common Stock', // 보통주발행 수익
@@ -418,8 +418,10 @@ class SheetOperator {
     
             for(var j = 0; j < superset.length; j++){
                 var sub_set = superset[j];
+
+                var row_col_str_list = row_col_str.trim().split('//');
     
-                if(sub_set[0]['value'].trim() == row_col_str.trim()){
+                if(row_col_str_list.includes(sub_set[0]['value'].trim())){
                     return {
                         superset : i,
                         subset : j
