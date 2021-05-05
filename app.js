@@ -13,9 +13,10 @@ const DRIVE_TOKEN_PATH = './config/token_drive.json';
 const DRIVE_CREDENTIALS_PATH = './config/credentials_drive.json';
 
 const STOCK_ANALYSIS_FILE_NAME_PREFIX = 'US Stock Analysis' // prefix of file name 
-const FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Finance Type)';
-const NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Normal Type)';
-const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Reits Type)';
+const FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Finance Type)';
+const NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Normal Type)';
+const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Reits Type)';
+const INSURANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Insurance Type)';
 
 const PARENT_STOCK_ANALYSIS_FOLDER_NAME = 'US Stock Anaysis';
 
@@ -71,13 +72,16 @@ g.template_file_name = undefined;
     
 if(['finance', 'f'].includes(param.stock_type)){
     g.req_sheet_type = gl_spreadsheet.enum_stock_types.FINANCE;
-    g.template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+    g.template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
 }else if(['normal', 'n'].includes(param.stock_type)){
     g.req_sheet_type = gl_spreadsheet.enum_stock_types.NORMAL;
-    g.template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+    g.template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
 }else if(['reits', 'r'].includes(param.stock_type)){
     g.req_sheet_type = gl_spreadsheet.enum_stock_types.REITS;
-    g.template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+    g.template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
+}else if(['insurance', 'i'].includes(param.stock_type)){
+    g.req_sheet_type = gl_spreadsheet.enum_stock_types.INSURANCE;
+    g.template_file_name = INSURANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
 }else{
     console.log('invalid stock type : \n' + useage_string);
     process.exit(1);

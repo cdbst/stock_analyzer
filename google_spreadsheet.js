@@ -4,7 +4,8 @@ const Mutex = require('async-mutex').Mutex;
 const enum_stock_types = {
     NORMAL : '1JRkKLvUePsNEzSe2yW7Fz4BrXxmyCivdzXQI0L0QylE',
     FINANCE : '1t_dNbefojsdih9P0ZZ4inEX3Zf8M623O2u_2_dWkh-U',
-    REITS : '113X2f5R284SPQlXkq_NIPaPax7p1ybxzC6LBzSSRQi0'
+    REITS : '113X2f5R284SPQlXkq_NIPaPax7p1ybxzC6LBzSSRQi0',
+    INSURANCE : '17M9WtoJ1UwbHqlp4JlXBy2LmGoqYkbDSqpqB4Vxb0hs'
 };
 
 const g_sheet_rows_map = {
@@ -124,7 +125,46 @@ const g_sheet_rows_map = {
             '!B52:G52' : 'Issuance of Common Stock', // 보통주발행 수익
             '!B53:G53' : 'Issuance of Preferred Stock' // 우선주발행 수익
         }
-    }
+    },
+    insurance : {
+        income_states_segment : {
+            '!B10:G10' : 'Total Revenues', // 매출액
+            '!B11:G11' : 'Premiums and Annuity Revenues', // 보험료 및 연금 수익
+            '!B12:G12' : 'Total Interest And Dividend Income', // 이자 및 배당 수익
+            '!B14:G14' : 'Policy Benefits', // 약관 보험금 지급액
+            '!B15:G15' : 'Operating Income', // 영업이익
+            '!B18:G18' : 'Interest Expense, Total', // 이자비용
+            '!B20:G20' : 'Net Income', // 순이익
+            '!B22:G22' : 'EBITDA' // EBITDA
+        },
+        balance_sheet_segment : {
+            '!B24:G24' : 'Total Assets', // 자산
+            '!B25:G25' : 'Total Liabilities', // 부채
+            '!B27:G27' : 'Total Common Equity',  // 보통주지분
+            '!B28:G28' : 'Minority Interest', // 우선주지분
+            '!B29:G29' : 'Total Shares Out. on Filing Date', // 발행주식수
+            '!B30:G30' : 'Investment In Debt Securities', // 부채담보부 증권
+            '!B31:G31' : 'Invest. in Equity and Pref. Securities', // 보통주 및 우선주
+            '!B32:G32' : 'Trading Asset Securities', // 자산 증권
+            '!B33:G33' : 'Real Estate Owned', // 부동산 자산
+            '!B34:G34' : 'Mortgage Loans', // 주택담보 대출
+            '!B35:G35' : 'Policy Loans', // 약정 대출
+            '!B36:G36' : 'Total Other Investments', // 기타 투자 자산
+            '!B37:G37' : 'Total investments' // 총 투자 자산
+        },
+        cashflow_segment : {
+            '!B38:G38' : 'Cash from Operations', // 영업활동 현금흐름 
+            '!B40:G40' : 'Cash from Investing', // 투자활동 현금흐름
+            '!B42:G42' : 'Cash from Financing', // 재무활동 현금흐름
+            '!B44:G44' : 'Levered Free Cash Flow', // Levered FCF
+            '!B45:G45' : 'Free Cash Flow / Share', // FCF / share
+            '!B47:G47' : 'Common & Preferred Stock Dividends Paid//Common & Preferred Stock Div. Paid', // 배당 지출
+            '!B49:G49' : 'Repurchase of Common Stock', // 보통주 매입
+            '!B50:G50' : 'Issuance of Common Stock', // 보통주발행 수익
+            '!B51:G51' : 'Repurchase of Preferred Stock', // 우선주 매입
+            '!B52:G52' : 'Issuance of Preferred Stock'// 우선주발행 수익
+        }
+    },
 };
 
 const sheet_cleanup_mutex = new Mutex();
@@ -146,6 +186,8 @@ class SheetOperator {
             this.sheet_row_map = g_sheet_rows_map.finance;
         }else if(_stock_type == enum_stock_types.REITS){
             this.sheet_row_map = g_sheet_rows_map.reits;
+        }else if(_stock_type == enum_stock_types.INSURANCE){
+            this.sheet_row_map = g_sheet_rows_map.insurance;
         }else{
             console.log('construction is failed : invalid sheet type.');
         }

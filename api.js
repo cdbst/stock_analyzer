@@ -19,9 +19,10 @@ const DRIVE_TOKEN_PATH = './config/token_drive.json';
 const DRIVE_CREDENTIALS_PATH = './config/credentials_drive.json';
 
 const STOCK_ANALYSIS_FILE_NAME_PREFIX = 'US Stock Analysis' // prefix of file name
-const FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Finance Type)';
-const NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Normal Type)';
-const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Reits Type)';
+const FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Finance Type)';
+const NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Normal Type)';
+const RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Reits Type)';
+const INSURANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME = STOCK_ANALYSIS_FILE_NAME_PREFIX + ' - Template(Insurance Type)';
 
 const PARENT_STOCK_ANALYSIS_FOLDER_NAME = 'US Stock Anaysis';
 const PARENT_STOCK_ANALYSIS_FOLDER_URL = 'https://drive.google.com/drive/folders/1j71iRw3CjIphM9ngCR_zuLJumrexMGmI?usp=sharing';
@@ -98,11 +99,13 @@ var run = function(__callback){
                         var template_file_name = undefined;
         
                         if(_annual_stock_type == gl_spreadsheet.enum_stock_types.FINANCE){
-                            template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                            template_file_name = FINANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
                         }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.NORMAL){
-                            template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                            template_file_name = NORMAL_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
                         }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.REITS){
-                            template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME_POSTFIX;
+                            template_file_name = RETIS_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
+                        }else if(_annual_stock_type == gl_spreadsheet.enum_stock_types.INSURANCE){
+                            template_file_name = INSURANCE_STOCK_ANALYSIS_TEMPLATE_FILE_NAME;
                         }else{
                             console.error('invalid stock type : \n' + useage_string);
                             return;
@@ -175,6 +178,8 @@ class ClientRequest{
                 stock_type = gl_spreadsheet.enum_stock_types.REITS;
             }else if(seeking_alpha.find_data_type_in_dataset('Provision For Loan Losses', _income_state)){
                 stock_type = gl_spreadsheet.enum_stock_types.FINANCE;
+            }else if(seeking_alpha.find_data_type_in_dataset('Total Interest And Dividend Income', _income_state)){
+                stock_type = gl_spreadsheet.enum_stock_types.INSURANCE;
             }else{ // default value is normal
                 stock_type = gl_spreadsheet.enum_stock_types.NORMAL;
             }
